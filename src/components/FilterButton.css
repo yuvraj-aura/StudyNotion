@@ -1,0 +1,43 @@
+/* Filter Buttons Bar */
+.filter-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 720px;
+  margin: 2rem auto 2.5rem auto;
+  padding: 6px;
+  background: var(--bg-richblack-800);
+  border: 1px solid var(--border-richblack-700);
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.filter-tab {
+  border: 1px solid transparent;
+  border-radius: 40px;
+  padding: 0.55rem 1.35rem;
+  color: var(--text-richblack-200);
+  background: transparent;
+  font-family: var(--font-inter);
+  font-size: 0.925rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.filter-tab:hover {
+  color: var(--text-richblack-5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-tab.active-tab {
+  color: var(--bg-richblack-900);
+  background-color: var(--yellow-50);
+  border-color: var(--yellow-50);
+  box-shadow: var(--shadow-yellow);
+  font-weight: 600;
+}

@@ -2,7 +2,7 @@
   background: var(--bg-richblack-800);
   border: 1px solid var(--border-richblack-700);
   border-radius: 16px;
-  margin: 7em auto;
+  margin: 10em auto;
   box-shadow: var(--shadow-lg);
   width: 40%;
   display: flex;

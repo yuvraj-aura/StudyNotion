@@ -20,8 +20,8 @@ const SignIn = ({ isLoggedIn, setIsLoggedIn }) => {
     }
     function submitHandler(e) {
         e.preventDefault();
-        navigate('/dashboard');
         setIsLoggedIn(true);
+        navigate('/dashboard');
         toast.success("Logged in sucessfully");
     }
     return (
