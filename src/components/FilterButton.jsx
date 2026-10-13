@@ -1,5 +1,4 @@
 import React from 'react';
-import "./FilterButton.css";
 
 const FilterButton = ({ filterData, category, setCategory }) => {
     let handleCategory = (title) => {

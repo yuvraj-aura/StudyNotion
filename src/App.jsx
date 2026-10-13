@@ -1,14 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import './App.css';
-import Navbar from "./components/Navbar";
+import Navbar from "./components/common/Navbar";
 import Dashboard from "./components/Dashboard";
 import { Route, Routes } from 'react-router-dom';
-import Home from "./components/Home";
-import About from "./components/About";
-import Contact from "./components/Contact";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
-import Footer from "./components/Footer";
+import Footer from "./components/common/Footer";
 import PrivateRoute from "./components/PrivateRoute";
 import { filterData, apiURL } from './data';
 import { toast } from 'react-toastify';
@@ -49,7 +49,7 @@ function App() {
 
   return (
     <>
-      <div className="app-container">
+      <div className="w-full min-h-screen bg-richblack-900 flex flex-col font-inter">
         <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
 
         <div className="page-content">
@@ -64,6 +64,7 @@ function App() {
                 <Dashboard courses={courses} category={category} setCategory={setCategory} loading={loading} error={error}/>
               </PrivateRoute>
             } />
+            
           </Routes>
         </div>
 
@@ -74,4 +75,5 @@ function App() {
 }
 
 export default App
+
 

@@ -1,5 +1,4 @@
 import { filterData, apiURL } from '../data';
-import './Dashboard.css';
 import FilterButton from './FilterButton';
 import Spinner from './Spinner';
 import Courses from './Courses';

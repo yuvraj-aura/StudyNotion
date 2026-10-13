@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import "./Course.css";
 import { FcLike } from 'react-icons/fc';
 import { FcLikePlaceholder } from "react-icons/fc";
 import { toast } from 'react-toastify';

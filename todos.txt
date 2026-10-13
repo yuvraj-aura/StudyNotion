@@ -1,0 +1,17 @@
+where can we place the config folder, in frontend
+
+
+
+folder structure
+|--> assets
+|--> data
+|--> components
+        |--> auth
+        |--> common
+        |--> course
+        |--> dashboard
+|--> hooks
+|--> slice
+|--> reducers
+|--> pages
+|--> services

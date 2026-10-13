@@ -1,7 +1,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+@import "tailwindcss";
+
+@theme {
+  --color-richblack-5: #F1F2FF;
+  --color-richblack-25: #DBDDEA;
+  --color-richblack-50: #C5C7D4;
+  --color-richblack-100: #AFB2BF;
+  --color-richblack-200: #999DAA;
+  --color-richblack-300: #838894;
+  --color-richblack-400: #6E727F;
+  --color-richblack-500: #585D69;
+  --color-richblack-600: #424854;
+  --color-richblack-700: #2C333F;
+  --color-richblack-800: #161D29;
+  --color-richblack-900: #000814;
+
+  --color-yellow-25: #FFF970;
+  --color-yellow-50: #FFD60A;
+  --color-yellow-100: #FFE83D;
+
+  --color-blue-25: #E7F6F8;
+  --color-blue-100: #47A5C5;
+  --color-blue-200: #118AB2;
+  --color-blue-300: #0056B3;
+
+  --color-pure-greys-5: #F9F9F9;
+  --color-pure-greys-25: #EAEAEA;
+  --color-pure-greys-50: #D8D8D8;
+
+  --color-caribbeangreen-50: #E7FDF4;
+  --color-caribbeangreen-100: #C0FDE1;
+  --color-caribbeangreen-200: #7DF8BA;
+  --color-caribbeangreen-300: #05A77B;
+  --color-caribbeangreen-400: #048C66;
+  --color-caribbeangreen-500: #037051;
+
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Inter', sans-serif;
+
+  --width-maxContent: 1260px;
+  --width-maxContentTab: 650px;
+}
+
 :root {
-  /* StudyNotion Color Palette */
   --bg-richblack-900: #000814;
   --bg-richblack-800: #161D29;
   --bg-richblack-700: #2C333F;
@@ -26,19 +68,6 @@
   --border-richblack-800: #161D29;
   
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: 'Plus Jakarta Sans', var(--font-inter);
-  
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --shadow-yellow: 0 0 20px rgba(255, 214, 10, 0.25);
-  --shadow-inset-border: inset 0px -1px 0px rgba(255, 255, 255, 0.18);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
 }
 
 body {
@@ -64,17 +93,7 @@ a {
   color: inherit;
 }
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  background: none;
+/* Background grid patterns */
+.homepage_bg {
+  background: linear-gradient(180deg, #000916 0%, #00122e 45%, #F9F9F9 100%);
 }
-
-input {
-  font-family: inherit;
-  outline: none;
-}
-
-

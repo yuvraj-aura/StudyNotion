@@ -1,6 +1,5 @@
 import React from 'react';
 import Course from './Course';
-import "./Courses.css";
 
 const Courses = ({ courses, category }) => {   
     function getCourses() {
