@@ -1,37 +1,37 @@
 {
-  "name": "demo",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "start": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview",
-    "server": "npm --prefix server run dev",
-    "dev:all": "concurrently -n \"client,server\" -c \"bgBlue,bgYellow\" \"npm run dev\" \"npm run server\""
-  },
-  "dependencies": {
-    "@reduxjs/toolkit": "^2.13.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "axios": "^1.20.0",
-    "concurrently": "^10.0.6",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-hot-toast": "^2.6.1",
-    "react-icons": "^5.7.0",
-    "react-redux": "^9.3.0",
-    "react-router-dom": "^7.18.4",
-    "react-toastify": "^11.1.0",
-    "react-type-animation": "^3.2.0",
-    "tailwindcss": "^4.3.3"
-  },
-  "devDependencies": {
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.4",
-    "oxlint": "^1.75.0",
-    "vite": "^8.2.0"
-  }
+    "name": "demo",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "start": "vite",
+        "build": "vite build",
+        "lint": "oxlint",
+        "preview": "vite preview",
+        "server": "npm --prefix server run dev",
+        "dev:all": "concurrently -n \"client,server\" -c \"bgBlue,bgYellow\" \"npm run dev\" \"npm run server\""
+    },
+    "dependencies": {
+        "@reduxjs/toolkit": "^2.13.0",
+        "@tailwindcss/vite": "^4.3.3",
+        "axios": "^1.20.0",
+        "concurrently": "^10.0.6",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "react-hot-toast": "^2.6.1",
+        "react-icons": "^5.7.0",
+        "react-redux": "^9.3.0",
+        "react-router-dom": "^7.18.4",
+        "react-toastify": "^11.1.0",
+        "react-type-animation": "^3.2.0",
+        "tailwindcss": "^4.3.3"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.17",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^6.0.4",
+        "oxlint": "^1.75.0",
+        "vite": "^8.2.0"
+    }
 }
