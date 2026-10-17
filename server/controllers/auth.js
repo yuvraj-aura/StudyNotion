@@ -165,6 +165,7 @@ exports.signUp = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'User cannot be registered at this moment. Please try again later!',
+            error: error.message,
         });
     }
 }

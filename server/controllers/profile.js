@@ -212,6 +212,51 @@ exports.getEnrolledCourses = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch enrolled courses",
+        });
+    }
+};
+
+// Get Cart items for a user
+exports.getUserCart = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId).populate("cart").exec();
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        return res.status(200).json({
+            success: true,
+            data: user.cart || [],
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch cart from database",
+            error: error.message,
+        });
+    }
+};
+
+// Sync / Update Cart items in database for a user
+exports.syncUserCart = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { cartCourseIds } = req.body; // array of course ObjectIds
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { cart: cartCourseIds || [] },
+            { new: true }
+        ).populate("cart").exec();
+
+        return res.status(200).json({
+            success: true,
+            message: "Cart synced with database successfully",
+            data: updatedUser.cart,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to sync cart in database",
             error: error.message,
         });
     }
