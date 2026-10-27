@@ -12,6 +12,7 @@ const CourseDetailsCard = ({ course, handleBuyNow }) => {
     const dispatch = useDispatch();
     const { token } = useSelector((state) => state.auth);
     const { user } = useSelector((state) => state.profile);
+    const {cart} = useSelector((state) => state.cart)
 
     const {
         name,
@@ -70,7 +71,7 @@ const CourseDetailsCard = ({ course, handleBuyNow }) => {
                     </button>
 
                     { // Add to cart
-                        (!course?.studentsEnrolled.includes(user?._id)) && (
+                        (!(course?.studentsEnrolled?.includes(user?._id) || course?.studentEnrolled?.includes(user?._id) || course?.instructor?._id === user?._id || course?.instructor === user?._id)) && (
                             <button
                                 type="button"
                                 onClick={handleAddToCart}

@@ -130,7 +130,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
             <Link to="/dashboard/cart" className="relative mr-2 text-richblack-100 hover:text-richblack-25 text-lg">
               <FaCartShopping />
               {totalItems > 0 && (
-                <span className="absolute -bottom-2 -right-2 grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-richblack-600 text-center text-xs font-bold text-yellow-100 animate-bounce">
+                <span className="absolute bottom-1 -right-2 grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-green-600 text-center text-xs font-bold text-white animate-bounce">
                   {totalItems}
                 </span>
               )}

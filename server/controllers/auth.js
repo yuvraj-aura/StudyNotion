@@ -205,7 +205,7 @@ exports.login = async (req, res) => {
             }
 
             const token = JWT.sign(payload, process.env.JWT_SECRET, {
-                expiresIn: "2h",
+                expiresIn: "72h",
             });
             user.token = token;
             user.password = undefined;

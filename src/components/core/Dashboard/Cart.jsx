@@ -5,7 +5,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { FaStar } from "react-icons/fa";
 import { removeFromCart, resetCart } from "../../../redux/slices/cartSlice";
 import { syncCartWithDB } from "../../../services/operations/cartAPI";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 
 export default function Cart() {
   const { cart, total, totalItems } = useSelector((state) => state.cart);

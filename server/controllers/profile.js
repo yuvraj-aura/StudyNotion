@@ -1,6 +1,8 @@
 const Profile = require('../models/profile');
 const User = require("../models/user");
+const CourseProgress = require("../models/courseProgress");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
+const convertSecondsToDuration = require("../utils/convertSecondsToDuration");
 
 exports.updateProfile = async (req, res) => {
     try {
@@ -202,10 +204,43 @@ exports.getEnrolledCourses = async (req, res) => {
             });
         }
 
+        const coursesWithProgress = [];
+
+        for (const course of userDetails.courses) {
+            let totalDurationInSeconds = 0;
+            let subSectionLength = 0;
+
+            for (const section of course.courseContent || []) {
+                for (const subSection of section.subSection || []) {
+                    totalDurationInSeconds += parseInt(subSection.timeDuration) || 0;
+                    subSectionLength += 1;
+                }
+            }
+
+            let progressPercentage = 0;
+            if (subSectionLength > 0) {
+                const courseProgressCount = await CourseProgress.findOne({
+                    courseId: course._id,
+                    userId: userId,
+                });
+                const completedCount = courseProgressCount?.completedVideos?.length || 0;
+                progressPercentage = Math.round((completedCount / subSectionLength) * 100);
+            } else {
+                progressPercentage = 100;
+            }
+
+            coursesWithProgress.push({
+                ...course.toObject(),
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds),
+                totalNoOfLectures: subSectionLength,
+                progressPercentage,
+            });
+        }
+
         return res.status(200).json({
             success: true,
             message: "Enrolled courses fetched successfully!",
-            data: userDetails.courses,
+            data: coursesWithProgress,
         });
     } catch (error) {
         console.log(error);

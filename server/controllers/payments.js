@@ -152,12 +152,19 @@ const enrollStudent = async (courses, userId, res) => {
                 });
             }
 
+            const courseProgress = await courseProgress.create({
+                courseId: courseId,
+                userId: userId,
+                completedVideos: [],
+            }) // now we have to associate this course progress with the new student.
+
             // find the student and add the course to teir list of enrolled courses
             const enrolledStudent = await User.findByIdAndUpdate(
                 userId,
                 {
                     $push: {
                         courses: courseId,
+                        courseProgress: courseProgress._id,
                     }
                 },
                 { new: true },
@@ -195,19 +202,32 @@ exports.sendPaymentSuccessEmail = async (req, res) => {
     try {
         // student ko dhundo
         const enrolledStudent = await User.findById(userId);
-        mailSender(
-            enrolledStudent.email,
-            "Payment Recieved",
-            paymentSuccessEmail(`${enrolledStudent.firstName}`, amount / 100, orderId, paymentId)
-        )
 
+        if (!enrolledStudent) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+        }
+
+        const mailResponse = await mailSender(
+            enrolledStudent.email,
+            "Payment Received - Your StudyNotion Receipt",
+            paymentSuccessEmail(`${enrolledStudent.firstName}`, amount / 100, orderId, paymentId)
+        );
+
+        console.log("Payment success email sent ->> ", mailResponse);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Payment receipt email sent successfully',
+        });
     } catch (err) {
-        console.log("Error in sending mail ->> ", error)
+        console.log("Error in sending mail ->> ", err);
         return res.status(500).json({
             success: false,
             message: 'Could not send email',
+            error: err.message,
         });
     }
-
-
-}
+};

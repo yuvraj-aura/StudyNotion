@@ -117,10 +117,10 @@ const Footer = () => {
                 </div>
 
                 {/* Divider line in desktop */}
-                <div className="hidden lg:block w-[1px] bg-richblack-700 min-h-[360px]"></div>
+                <div className="hidden lg:block w-px bg-richblack-700 min-h-90"></div>
 
                 {/* Right Half: Subjects, Languages, Career building */}
-                <div className="w-[100%] lg:w-[50%] flex flex-wrap flex-row justify-between pl-3 lg:pl-5 gap-4">
+                <div className="w-full lg:w-[50%] flex flex-wrap flex-row justify-between pl-3 lg:pl-5 gap-4">
                     {FooterLink2.map((ele, i) => {
                         return (
                             <div key={i} className="w-[45%] sm:w-[30%] flex flex-col gap-3">

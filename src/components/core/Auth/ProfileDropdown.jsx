@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { VscDashboard, VscSignOut } from "react-icons/vsc";
 import { AiOutlineCaretDown } from "react-icons/ai";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { setToken } from "../../../redux/slices/authSlice";
 import { setUser } from "../../../redux/slices/profileSlice";
 import { resetCart } from "../../../redux/slices/cartSlice";

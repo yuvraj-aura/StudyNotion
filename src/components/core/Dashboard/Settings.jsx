@@ -1,22 +1,30 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { setUser } from "../../../redux/slices/profileSlice";
-import { FiUpload } from "react-icons/fi";
+import { FiUpload, FiTrash2 } from "react-icons/fi";
+import { updateProfilePicture, removeProfilePicture } from "../../../services/operations/settingsAPI";
 
 export default function Settings() {
   const { user } = useSelector((state) => state.profile);
+  const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // ── file input ref for native OS file dialog ──
+  const fileInputRef = useRef(null);
+  const [previewSrc, setPreviewSrc] = useState(null); // local preview before upload
+  const [uploading, setUploading] = useState(false);
+
+  // ── form state ──
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || "Love",
-    lastName: user?.lastName || "Babbar",
-    dateOfBirth: user?.additionalDetails?.dateOfBirth || "1995-01-01",
-    gender: user?.additionalDetails?.gender || "Male",
-    contactNumber: user?.additionalDetails?.contactNumber || "+91 98765 43210",
-    about: user?.additionalDetails?.about || "Senior Software Engineer and Educator.",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    dateOfBirth: user?.additionalDetails?.dateOfBirth || "",
+    gender: user?.additionalDetails?.gender || "Prefer not to say",
+    contactNumber: user?.additionalDetails?.contactNumber || "",
+    about: user?.additionalDetails?.about || "",
   });
 
   const handleChange = (e) => {
@@ -46,50 +54,146 @@ export default function Settings() {
     navigate("/dashboard/my-profile");
   };
 
-  const initials = user?.firstName
-    ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ""}`.toUpperCase()
-    : "LB";
+  // ─── Open native OS file chooser ───────────────────────────────────────────
+  const handleUploadClick = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
+  // ─── When user selects a file ─────────────────────────────────────────────
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // show local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    setPreviewSrc(localUrl);
+
+    // build FormData and dispatch thunk
+    const form = new FormData();
+    form.append("profilePhoto", file);
+
+    setUploading(true);
+    const result = await dispatch(updateProfilePicture(token, form));
+    setUploading(false);
+
+    if (result) {
+      // clear local preview — now using the Cloudinary URL from Redux
+      setPreviewSrc(null);
+    }
+
+    // reset file input so same file can be re-selected
+    e.target.value = "";
+  };
+
+  // ─── Remove photo → fall back to dicebear initials avatar ────────────────
+  const handleRemove = async () => {
+    const firstName = user?.firstName || "U";
+    const lastName = user?.lastName || "";
+    setUploading(true);
+    await dispatch(removeProfilePicture(token, firstName, lastName));
+    setUploading(false);
+    setPreviewSrc(null);
+  };
+
+  // ─── Displayed avatar src ─────────────────────────────────────────────────
+  const firstName = user?.firstName || "U";
+  const lastName = user?.lastName || "";
+  const dicebearUrl = `https://api.dicebear.com/5.x/initials/svg?seed=${encodeURIComponent(
+    `${firstName} ${lastName}`
+  )}`;
+  const avatarSrc = previewSrc || user?.image || dicebearUrl;
 
   return (
     <div className="text-richblack-5 font-inter flex flex-col gap-y-8">
       <h1 className="text-3xl font-semibold text-richblack-5">Edit Profile</h1>
 
-      {/* 1. Profile Picture Card */}
+      {/* ── 1. Profile Picture Card ── */}
       <div className="flex items-center gap-x-6 rounded-2xl border border-richblack-700 bg-richblack-800 p-8 px-12 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
-        {user?.image ? (
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+
+        {/* Avatar */}
+        <div className="relative">
           <img
-            src={user.image}
-            alt="User avatar"
-            className="aspect-square w-[78px] rounded-full object-cover border-2 border-richblack-600"
+            src={avatarSrc}
+            alt={`${firstName} ${lastName} avatar`}
+            className="aspect-square w-[78px] rounded-full object-cover border-2 border-richblack-600 shadow-md"
+            onError={(e) => {
+              // If the image fails to load, fall back to dicebear
+              e.currentTarget.src = dicebearUrl;
+            }}
           />
-        ) : (
-          <div className="flex h-[78px] w-[78px] items-center justify-center rounded-full bg-pink-700 text-2xl font-bold text-white border-2 border-pink-500 shadow-md">
-            {initials}
-          </div>
-        )}
+          {uploading && (
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
+              <svg
+                className="h-6 w-6 animate-spin text-yellow-50"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+
+        {/* Buttons */}
         <div className="space-y-2">
           <p className="text-base font-semibold text-richblack-5">Change Profile Picture</p>
+          <p className="text-xs text-richblack-400">
+            Supported: JPG, PNG, WebP · Max 5 MB
+          </p>
           <div className="flex gap-x-3">
             <button
               type="button"
-              onClick={() => toast.success("Picture updated successfully")}
-              className="flex items-center gap-x-2 rounded-lg bg-yellow-50 py-2 px-5 font-semibold text-richblack-900 hover:bg-yellow-100 transition-all cursor-pointer shadow-sm text-sm"
+              onClick={handleUploadClick}
+              disabled={uploading}
+              className="flex items-center gap-x-2 rounded-lg bg-yellow-50 py-2 px-5 font-semibold text-richblack-900
+                         hover:bg-yellow-100 transition-all cursor-pointer shadow-sm text-sm
+                         disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>Upload</span>
+              <span>{uploading ? "Uploading…" : "Upload"}</span>
               <FiUpload />
             </button>
+
             <button
               type="button"
-              className="rounded-lg bg-richblack-700 py-2 px-5 font-semibold text-richblack-100 hover:bg-richblack-600 transition-all cursor-pointer text-sm"
+              onClick={handleRemove}
+              disabled={uploading}
+              className="flex items-center gap-x-2 rounded-lg bg-richblack-700 py-2 px-5 font-semibold text-richblack-100
+                         hover:bg-richblack-600 transition-all cursor-pointer text-sm
+                         disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Remove
+              <span>Remove</span>
+              <FiTrash2 />
             </button>
           </div>
         </div>
       </div>
 
-      {/* 2. Personal Information Form */}
-      <form onSubmit={handleProfileSubmit} className="flex flex-col gap-y-6 rounded-2xl border border-richblack-700 bg-richblack-800 p-8 px-12 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+      {/* ── 2. Personal Information Form ── */}
+      <form
+        onSubmit={handleProfileSubmit}
+        className="flex flex-col gap-y-6 rounded-2xl border border-richblack-700 bg-richblack-800 p-8 px-12 shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
+      >
         <h2 className="text-lg font-semibold text-richblack-5">Profile Information</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -100,7 +204,8 @@ export default function Settings() {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50"
+              placeholder="Enter first name"
+              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 placeholder:text-richblack-500"
             />
           </div>
 
@@ -111,7 +216,8 @@ export default function Settings() {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50"
+              placeholder="Enter last name"
+              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 placeholder:text-richblack-500"
             />
           </div>
 
@@ -148,7 +254,8 @@ export default function Settings() {
               name="contactNumber"
               value={formData.contactNumber}
               onChange={handleChange}
-              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50"
+              placeholder="+91 98765 43210"
+              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 placeholder:text-richblack-500"
             />
           </div>
 
@@ -159,8 +266,9 @@ export default function Settings() {
               rows={3}
               value={formData.about}
               onChange={handleChange}
-              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 resize-none"
-            ></textarea>
+              placeholder="Tell us a little about yourself…"
+              className="rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 resize-none placeholder:text-richblack-500"
+            />
           </div>
         </div>
 

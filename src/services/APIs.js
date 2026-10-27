@@ -14,12 +14,18 @@ export const categories = {
     CATEGORIES_API: BASE_URL + "/course/showAllCategories",
 }
 
+export const catalogData = {
+    CATALOGPAGEDATA_API: BASE_URL + "/course/categoryPageDetails",
+}
+
 // user endpoints
 export const profileEndpoints = {
     GET_USER_DETAILS_API: BASE_URL + "/profile/getUserDetails",
     GET_USER_ENROLLED_COURSES_API: BASE_URL + "/profile/getEnrolledCourses",
     GET_USER_CART_API: BASE_URL + "/profile/getUserCart",
     SYNC_USER_CART_API: BASE_URL + "/profile/syncUserCart",
+    UPDATE_PROFILE_PICTURE_API: BASE_URL + "/profile/updateProfilePhoto",
+    UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
 }
 
 // students endpoints
@@ -30,7 +36,7 @@ export const studentEndpoints = {
 }
 
 // course endpoints
-export const couseeEndpoints = {
+export const courseEndpoints = {
     GET_ALL_COURSE_API: BASE_URL + "/course/getAllCourses",
     COURSE_DETAILS_API: BASE_URL + "/course/getCourseDetails",
     EDIT_COURSE_API: BASE_URL + "/course/editCourse",
@@ -47,4 +53,9 @@ export const couseeEndpoints = {
     GET_FULL_COURSE_DETAILS_AUTHENTICATED: BASE_URL + "/course/getFullCourseDetails",
     LECTURE_COMPLETION_API: BASE_URL + "/course/updateCourseProgress",
     CREATING_RATING_API: BASE_URL + "/course/createRating",
+}
+
+// RATING AND REVIEWS
+export const ratingEndpoints = {
+    
 }

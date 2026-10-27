@@ -5,6 +5,12 @@ const {
     createCourse,
     showAllCourses,
     getCourseDetails,
+    editCourse,
+    getAllCourses,
+    getCourseProgress,
+    getFullCourseDetails,
+    getInstructorCourses,
+    deleteCourse,
 } = require("../controllers/course");
 
 const {
@@ -31,10 +37,16 @@ const {
     getAllRatingAndReview,
 } = require("../controllers/ratingAndReview");
 
+const {
+    updateCourseProgress
+} = require("../controllers/courseProgress")
+
+// Important middleware
 const { auth, isInstructor, isStudent, isAdmin } = require("../middlewares/auth");
 
 // Course routes
 router.post("/createCourse", auth, isInstructor, createCourse);
+// router.put("/editCourse", auth, isInstructor, editCourse);
 router.post("/addSection", auth, isInstructor, createSection);
 router.post("/updateSection", auth, isInstructor, updateSection);
 router.post("/deleteSection", auth, isInstructor, deleteSection);
@@ -47,9 +59,16 @@ router.post("/deleteSubSection", auth, isInstructor, deleteSubSection);
 router.delete("/deleteSubSection", auth, isInstructor, deleteSubSection);
 
 // Get Courses routes
-router.get("/getAllCourses", showAllCourses);
-router.post("/showAllCourses", showAllCourses);
+router.get("/getAllCourses", getAllCourses);
 router.post("/getCourseDetails", getCourseDetails);
+router.post("/getAllPublishedCourses", getAllCourses);
+router.post("/getFullCourseDetails", auth, getFullCourseDetails);
+// router.post("/getCourseProgress", auth, getCourseProgress);
+router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
+router.post("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
+router.post("/deleteCourse", auth, isInstructor, deleteCourse);
+
+router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
 
 // Category routes
 router.post("/createCategory", auth, isAdmin, createCategory);

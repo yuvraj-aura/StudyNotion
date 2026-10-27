@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FcLike } from 'react-icons/fc';
 import { FcLikePlaceholder } from "react-icons/fc";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 const Course = ({ course }) => {
     const [readMore, setReadMore] = useState(false);

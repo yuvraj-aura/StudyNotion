@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaClock, FaPaperPlane } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import countryCodeData from '../data/countryCode.json';
 
 const Contact = () => {

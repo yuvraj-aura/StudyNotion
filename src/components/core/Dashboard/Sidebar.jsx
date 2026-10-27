@@ -7,7 +7,7 @@ import { VscSettingsGear, VscSignOut } from "react-icons/vsc";
 import { setToken } from "../../../redux/slices/authSlice";
 import { setUser } from "../../../redux/slices/profileSlice";
 import { resetCart } from "../../../redux/slices/cartSlice";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 
 export default function Sidebar() {
   const { user } = useSelector((state) => state.profile);

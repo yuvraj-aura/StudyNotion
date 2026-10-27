@@ -59,69 +59,85 @@ exports.showAllCategories = async (req, res) => {
 
 exports.categoryPageDetails = async (req, res) => {
     try {
-        // fetch details from req body
-        const { categoryId } = req.body
+        const { categoryId } = req.body;
+
+        if (!categoryId) {
+            return res.status(400).json({
+                success: false,
+                message: "categoryId is required",
+            });
+        }
 
         // get courses for the specified category
         const selectedCategory = await Category.findById(categoryId)
-            .populate("courses")
+            .populate({
+                path: "course",
+                populate: {
+                    path: "instructor",
+                    select: "firstName lastName email image",
+                },
+            })
             .exec();
 
-        console.log(selectedCategory);
-
         if (!selectedCategory) {
-            console.log("Category not found");
             return res.status(404).json({
-                    success: false,
-                    message: 'Category not found',
-                })
+                success: false,
+                message: "Category not found",
+            });
         }
 
-        // Handle the case when there are no courses
-        if (selectedCategory.course.length === 0) {
-            console.log("No courses found for the selected category");
-            return res
-                .status(404)
-                .json({
-                    success: false,
-                    message: 'No courses found for the selected category',
-                })
-        }
+        const selectedCourses = selectedCategory.course || [];
 
-        const selectedCourses = selectedCategory.course;
-
-        // GEt courses for other categories 
+        // Get courses for other categories 
         const categoriesExceptSelected = await Category.find({
-            _id: {
-                $ne: categoryId,
-            },
-        }).populate("courses").exec();
- 
+            _id: { $ne: categoryId },
+        })
+            .populate({
+                path: "course",
+                populate: {
+                    path: "instructor",
+                    select: "firstName lastName email image",
+                },
+            })
+            .exec();
+
         let differentCourses = [];
-        for (const categoroy of categoriesExceptSelected) {
-            differentCourses.push(...category.courses);
+        for (const cat of categoriesExceptSelected) {
+            if (cat.course && cat.course.length > 0) {
+                differentCourses.push(...cat.course);
+            }
         }
 
-        // GEt top-selling courses accross all categories
-        const allCategories = await Category.find().populate("courses");
-        const allCourses = allCategories.flatMap((category) => category.course);
-        const mostSellingCourses = allCourses
-            .sort((a,b) => b.sold - a.sold)
-            .slice(0,10);
-
+        // Get all courses across all categories
+        const allCategories = await Category.find().populate({
+            path: "course",
+            populate: {
+                path: "instructor",
+                select: "firstName lastName email image",
+            },
+        });
+        const allCourses = allCategories.flatMap((cat) => cat.course || []);
+        const mostSellingCourses = allCourses.slice(0, 10);
 
         return res.status(200).json({
             success: true,
-            message: 'Successfully!',
-            selectedCourses: selectedCourses,
-            differentCourses: differentCourses,
-            mostSellingCourses: mostSellingCourses,
+            data: {
+                selectedCategory: {
+                    _id: selectedCategory._id,
+                    name: selectedCategory.name,
+                    description: selectedCategory.description,
+                    courses: selectedCourses,
+                },
+                differentCourses,
+                mostSellingCourses,
+            },
+            message: "Category page details fetched successfully",
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: 'Unable to find category',
-            error: error.message
+            message: "Unable to find category",
+            error: error.message,
         });
     }
 };

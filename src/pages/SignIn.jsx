@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { FcGoogle } from "react-icons/fc";
 import loginImg from "../assets/login.png";
 import frameImg from "../assets/frame.png";
