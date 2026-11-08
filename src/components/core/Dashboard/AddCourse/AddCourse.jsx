@@ -9,16 +9,19 @@ import {
   addCourseDetails,
   createSection,
   createSubSection,
-} from "../../../services/operations/courseDetailsAPI";
+} from "../../../../services/operations/courseDetailsAPI";
 
 export default function AddCourse() {
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-``
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [categoriesList, setCategoriesList] = useState([]);
   const [createdCourse, setCreatedCourse] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailSource, setThumbnailSource] = useState("file");
+  const [thumbnailPreview, setThumbnailPreview] = useState("");
 
   // Step 1: Course Info State
   const [courseData, setCourseData] = useState({
@@ -28,7 +31,7 @@ export default function AddCourse() {
     courseCategory: "",
     courseTags: "Web Development, React",
     courseBenefits: "",
-    thumbnail: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80",
+    thumbnail: "",
   });
 
   // Step 2: Course Builder State
@@ -63,6 +66,17 @@ export default function AddCourse() {
     getCategories();
   }, []);
 
+  useEffect(() => {
+    if (thumbnailSource === "url" || !thumbnailFile) {
+      setThumbnailPreview(thumbnailSource === "url" ? courseData.thumbnail.trim() : "");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(thumbnailFile);
+    setThumbnailPreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [thumbnailFile, thumbnailSource, courseData.thumbnail]);
+
   // Handle Step 1: Submit Course Details to Database
   const handleCourseSubmit = async (e) => {
     e.preventDefault();
@@ -77,15 +91,18 @@ export default function AddCourse() {
     }
 
     setLoading(true);
-    const payload = {
-      name: courseData.courseTitle,
-      description: courseData.courseShortDesc,
-      whatYouWillLearn: courseData.courseBenefits || "In-depth modern concepts and hands-on portfolio projects.",
-      price: courseData.coursePrice,
-      category: courseData.courseCategory,
-      tag: courseData.courseTags.split(",").map((t) => t.trim()),
-      thumbnail: courseData.thumbnail,
-    };
+    const payload = new FormData();
+    payload.append("name", courseData.courseTitle);
+    payload.append("description", courseData.courseShortDesc);
+    payload.append(
+      "whatYouWillLearn",
+      courseData.courseBenefits || "In-depth modern concepts and hands-on portfolio projects."
+    );
+    payload.append("price", courseData.coursePrice);
+    payload.append("category", courseData.courseCategory);
+    payload.append("tag", JSON.stringify(courseData.courseTags.split(",").map((t) => t.trim())));
+    if (thumbnailSource === "url") payload.append("thumbnail", courseData.thumbnail.trim());
+    if (thumbnailSource === "file" && thumbnailFile) payload.append("thumbnailImage", thumbnailFile);
 
     const result = await addCourseDetails(payload, token);
     setLoading(false);
@@ -301,24 +318,72 @@ export default function AddCourse() {
               </div>
             </div>
 
-            {/* Thumbnail URL Input with Image Preview */}
+            {/* Thumbnail upload with image preview */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-richblack-5">
-                Course Thumbnail URL <sup className="text-pink-200">*</sup>
+              <label htmlFor="thumbnail-source" className="text-sm font-medium text-richblack-5">
+                Course Thumbnail
+              </label>
+              <select
+                id="thumbnail-source"
+                value={thumbnailSource}
+                onChange={(e) => setThumbnailSource(e.target.value)}
+                className="w-full rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50"
+              >
+                <option value="file">Upload image</option>
+                <option value="url">Image URL</option>
+              </select>
+              {thumbnailSource === "url" ? (
+                <input
+                  type="url"
+                  aria-label="Course thumbnail image URL"
+                  value={courseData.thumbnail}
+                  onChange={(e) => setCourseData({ ...courseData, thumbnail: e.target.value })}
+                  placeholder="Paste image URL"
+                  className="w-full rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 text-sm"
+                />
+              ) : (
+              <>
+              <label
+                htmlFor="course-thumbnail"
+                className="flex w-full max-w-[320px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-richblack-500 bg-richblack-700 px-5 py-6 text-center transition hover:border-yellow-50"
+              >
+                <HiOutlineUpload className="text-2xl text-yellow-50" />
+                <span className="text-sm font-medium text-richblack-5">
+                  {thumbnailFile ? "Choose a different image" : "Choose an image from your device"}
+                </span>
+                <span className="text-xs text-richblack-300">Image files only (PNG, JPG, WEBP)</span>
               </label>
               <input
-                type="text"
-                value={courseData.thumbnail}
-                onChange={(e) =>
-                  setCourseData({ ...courseData, thumbnail: e.target.value })
-                }
-                placeholder="Paste Image URL"
-                className="w-full rounded-lg bg-richblack-700 p-3 text-richblack-5 border-b border-richblack-600 outline-none focus:border-yellow-50 text-sm"
+                id="course-thumbnail"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (!file.type.startsWith("image/")) {
+                    toast.error("Please choose an image file");
+                    e.target.value = "";
+                    return;
+                  }
+                  setThumbnailFile(file);
+                }}
               />
-              {courseData.thumbnail && (
+              {thumbnailFile && (
+                <button
+                  type="button"
+                  onClick={() => setThumbnailFile(null)}
+                  className="w-fit text-xs text-richblack-200 underline hover:text-richblack-5"
+                >
+                  Remove image
+                </button>
+              )}
+              </>
+              )}
+              {thumbnailPreview && (
                 <img
-                  src={courseData.thumbnail}
-                  alt="Thumbnail Preview"
+                  src={thumbnailPreview}
+                  alt="Course thumbnail preview"
                   className="mt-2 h-40 w-full max-w-[320px] rounded-lg object-cover border border-richblack-600"
                 />
               )}

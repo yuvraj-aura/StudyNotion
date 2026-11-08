@@ -14,23 +14,26 @@ import Contact from "./pages/Contact";
 import Dashboard from './pages/Dashboard';
 import MyProfile from "./components/core/Dashboard/MyProfile";
 import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
-import Cart from "./components/core/Dashboard/Cart";
-import AddCourse from "./components/core/Dashboard/AddCourse";
+import Cart from "./components/core/Dashboard/Cart/Cart";
+import AddCourse from "./components/core/Dashboard/AddCourse/AddCourse";
 import MyCourse from "./components/core/Dashboard/MyCourse";
-import EditCourse from "./components/core/Dashboard/EditCourse";
-import Settings from "./components/core/Dashboard/Settings";
+import EditCourse from "./components/core/Dashboard/EditCourse/EditCourse";
+import Settings from "./components/core/Dashboard/Settings/Settings";
 import Catalog from "./pages/Catalog";
 import CourseDetails from "./pages/CourseDetails";
 import Error from "./pages/Error";
 import PrivateRoute from "./components/core/Auth/PrivateRoute";
-import Footer from "./components/common/Footer";
+
 import { filterData, apiURL } from './data';
 import { ACCOUNT_TYPE } from "./utils/constants";
 import { useSelector, useDispatch } from 'react-redux';
 import { getUserCartFromDB } from './services/operations/cartAPI';
+import { getUserDetails } from './services/operations/profileAPI';
+import { setUser } from './redux/slices/profileSlice';
 import VideoDetailsSidebar from "./components/core/ViewCourse/VideoDetailsSidebar"
 import ViewCourse from './pages/ViewCourse';
 import VideoDetails from "./components/core/ViewCourse/VideoDetails"
+import Instructor from "./components/core/Dashboard/InstructorDashboard/Instructor"
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -69,6 +72,20 @@ function App() {
             dispatch(getUserCartFromDB(token));
         }
     }, [fetchData, token, dispatch]);
+
+    useEffect(() => {
+        if (!token) return;
+        let cancelled = false;
+        const cachedUser = localStorage.getItem("user");
+        getUserDetails(token).then((savedUser) => {
+            // Do not overwrite a profile edited while this request was in flight.
+            if (!cancelled && savedUser && localStorage.getItem("user") === cachedUser) {
+                dispatch(setUser(savedUser));
+                localStorage.setItem("user", JSON.stringify(savedUser));
+            }
+        });
+        return () => { cancelled = true; };
+    }, [token, dispatch]);
 
     return (
         <div className="w-full min-h-screen bg-richblack-900 flex flex-col font-inter">
@@ -151,6 +168,7 @@ function App() {
                         {
                             user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
                                 <>
+                                    <Route path="/dashboard/instructor" element={<Instructor />} />
                                     <Route path="/dashboard/add-course" element={<AddCourse />} />
                                     <Route path="/dashboard/my-courses" element={<MyCourse />} />
                                     <Route path="/dashboard/edit-course/:courseId" element={<EditCourse />} />
@@ -184,8 +202,7 @@ function App() {
             </div>
 
                     
-
-            <Footer />
+           
         </div>
     );
 }

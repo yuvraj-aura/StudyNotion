@@ -2,9 +2,9 @@ import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { setUser } from "../../../redux/slices/profileSlice";
+import { setUser } from "../../../../redux/slices/profileSlice";
 import { FiUpload, FiTrash2 } from "react-icons/fi";
-import { updateProfilePicture, removeProfilePicture } from "../../../services/operations/settingsAPI";
+import { updateProfilePicture, removeProfilePicture } from "../../../../services/operations/settingsAPI";
 
 export default function Settings() {
   const { user } = useSelector((state) => state.profile);
@@ -62,7 +62,13 @@ export default function Settings() {
   // ─── When user selects a file ─────────────────────────────────────────────
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || uploading) return;
+    const input = e.target;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      toast.error("Choose a JPEG, PNG, or WebP image up to 5 MB.");
+      input.value = "";
+      return;
+    }
 
     // show local preview immediately
     const localUrl = URL.createObjectURL(file);
@@ -73,16 +79,14 @@ export default function Settings() {
     form.append("profilePhoto", file);
 
     setUploading(true);
-    const result = await dispatch(updateProfilePicture(token, form));
-    setUploading(false);
-
-    if (result) {
-      // clear local preview — now using the Cloudinary URL from Redux
+    try {
+      await dispatch(updateProfilePicture(token, form));
+    } finally {
+      setUploading(false);
       setPreviewSrc(null);
+      URL.revokeObjectURL(localUrl);
+      input.value = "";
     }
-
-    // reset file input so same file can be re-selected
-    e.target.value = "";
   };
 
   // ─── Remove photo → fall back to dicebear initials avatar ────────────────
@@ -90,9 +94,12 @@ export default function Settings() {
     const firstName = user?.firstName || "U";
     const lastName = user?.lastName || "";
     setUploading(true);
-    await dispatch(removeProfilePicture(token, firstName, lastName));
-    setUploading(false);
-    setPreviewSrc(null);
+    try {
+      await dispatch(removeProfilePicture(token, firstName, lastName));
+    } finally {
+      setUploading(false);
+      setPreviewSrc(null);
+    }
   };
 
   // ─── Displayed avatar src ─────────────────────────────────────────────────

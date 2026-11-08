@@ -1,0 +1,6 @@
+.instructor-stat-card:hover {
+    border-color: color-mix(in srgb, var(--stat-hover-color) 50%, transparent);
+    box-shadow:
+        0 20px 25px -5px color-mix(in srgb, var(--stat-hover-color) 15%, transparent),
+        0 8px 10px -6px color-mix(in srgb, var(--stat-hover-color) 15%, transparent);
+}

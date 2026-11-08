@@ -87,7 +87,7 @@ export default function MyCourse() {
                             key={course._id}
                             className="flex items-center border-b border-richblack-700/60 p-5 px-6 gap-x-4 hover:bg-richblack-750 transition-colors"
                         >
-                            <div 
+                            <div
                                 onClick={() => {
                                     const firstSection = course?.courseContent?.[0];
                                     const firstSubSection = firstSection?.subsections?.[0] || firstSection?.subSection?.[0];
@@ -137,7 +137,7 @@ export default function MyCourse() {
                                         navigate(`/dashboard/edit-course/${course._id}`)}
                                     className="rounded-md bg-richblack-700 hover:bg-richblack-600 px-3 py-1.5 text-xs font-medium text-richblack-5 transition-colors cursor-pointer"
                                 >
-                                    <RiEdit2Fill size={20}/>
+                                    <RiEdit2Fill size={20} />
                                 </button>
                                 <button
                                     disabled={deleting}
@@ -145,7 +145,7 @@ export default function MyCourse() {
                                     onMouseEnter={handleMouseEnter}
                                     className="rounded-md bg-pink-800/40 hover:bg-red-500 px-3 py-1.5 text-xs font-medium text-pink-200 transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center p-2"
                                 >
-                                    <FaRegTrashAlt size={20}/>
+                                    <FaRegTrashAlt size={20} />
                                 </button>
                             </div>
                         </div>
