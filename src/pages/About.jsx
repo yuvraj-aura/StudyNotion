@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaGraduationCap, FaLightbulb, FaHeart, FaRocket, FaGlobe, FaShieldAlt } from 'react-icons/fa';
 import HighlightText from '../components/core/Homepage/HighlightText';
+import ReviewSlider from "../components/core/Homepage/ReviewSlider";
+import Footer from "../components/common/Footer"
 
 const stats = [
     { count: "5K+", label: "Active Students" },
@@ -36,14 +38,13 @@ const About = () => {
     return (
         <div className="w-full relative bg-richblack-900 text-richblack-5 font-inter">
             {/* ========================================================
-    SECTION 1 : Hero Header Banner
-======================================================== */}
+                    SECTION 1 : Hero Header Banner
+            ======================================================== */}
 
             <section className="relative isolate bg-richblack-800 border-b border-richblack-700">
 
                 {/* Hero heading and description */}
-                {/* ✅ CHANGED: Added extra bottom padding to make room
-        for images overlapping the next section */}
+                {/* ✅ CHANGED: Added extra bottom padding to make room for images overlapping the next section */}
                 <div className="relative mx-auto flex w-11/12 max-w-320 flex-col items-center justify-center text-center pt-20 pb-48 md:pb-56 lg:pb-64">
 
                     <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-richblack-5 max-w-225 leading-tight">
@@ -227,8 +228,22 @@ const About = () => {
                     ))}
                 </div>
             </section>
+
+            <div>
+                <h2>What Others say about us</h2>
+                <div>
+                    <ReviewSlider />
+                </div>
+            </div>
+
+
+            <Footer />
         </div>
     );
 };
 
 export default About;
+
+
+
+// add reviews too here 

@@ -1,3 +1,4 @@
+import { categorySlug } from "../../utils/categorySlug";
 import { Link, matchPath, useLocation } from "react-router-dom";
 import logo from "../../assets/Logo.svg";
 import { NavbarLinks } from "../../data/navbar-links";
@@ -87,7 +88,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn }) => {
                           {subLinks.map((subLink, i) => {
                             const linkPath =
                               subLink.link ||
-                              `/catalog/${subLink.name?.split(" ").join("-").toLowerCase()}`;
+                              `/catalog/${categorySlug(subLink.name)}`;
                             return (
                               <Link
                                 to={linkPath}

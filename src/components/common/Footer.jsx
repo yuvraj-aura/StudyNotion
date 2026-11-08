@@ -21,10 +21,16 @@ const Footer = () => {
     return (
         <div className="bg-richblack-800 text-richblack-400 border-t border-richblack-700">
             <div className="flex flex-col lg:flex-row gap-8 items-start justify-between w-11/12 max-w-maxContent text-richblack-400 leading-6 mx-auto py-14">
+
+
                 {/* Left Half: Company, Resources, Plans, Community */}
+
                 <div className="w-full lg:w-[50%] flex flex-wrap flex-row justify-between pl-3 lg:pr-5 gap-4">
                     <div className="w-[45%] sm:w-[30%] flex flex-col gap-3">
-                        <Link to="/">
+                        <Link
+                            to="/"
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        >
                             <img src={logo} alt="StudyNotion Logo" className="object-contain" width={160} />
                         </Link>
                         <h4 className="text-richblack-50 font-semibold text-[16px] mt-2">

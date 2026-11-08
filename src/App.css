@@ -51,3 +51,7 @@ html, body {
 .course-review-modal-submit-btn {
   @apply w-full rounded-lg bg-yellow-50 py-3 px-4 font-semibold text-richblack-900 hover:bg-yellow-100 transition-all duration-200 shadow-[inset_0px_-1px_0px_rgba(255,255,255,0.18)] hover:scale-[0.99] active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed;
 }
+
+.linear-swiper .swiper-wrapper {
+  transition-timing-function: linear !important;
+}

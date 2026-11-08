@@ -1,0 +1,11 @@
+.review-slider {
+    overflow: hidden;
+}
+
+.review-slider * {
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .review-slider { animation: none; }
+}
