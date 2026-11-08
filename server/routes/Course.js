@@ -65,7 +65,6 @@ router.post("/getAllPublishedCourses", getAllCourses);
 router.post("/getFullCourseDetails", auth, getFullCourseDetails);
 // router.post("/getCourseProgress", auth, getCourseProgress);
 router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
-router.post("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
 router.post("/deleteCourse", auth, isInstructor, deleteCourse);
 
 router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
@@ -73,13 +72,11 @@ router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
 // Category routes
 router.post("/createCategory", auth, isAdmin, createCategory);
 router.get("/showAllCategories", showAllCategories);
-router.post("/categoryPageDetails", categoryPageDetails);
+router.post("/getCategoryPageDetails", categoryPageDetails);
 
 // Rating and Review routes
 router.post("/createRating", auth, isStudent, createRating);
 router.get("/getAverageRating", getAvgRatings);
-router.post("/getAvgRatings", getAvgRatings);
 router.get("/getReviews", getAllRatingAndReview);
-router.get("/getAllRatingAndReview", getAllRatingAndReview);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+    step: 1,
     courses: [],
     currentCourse: null,
     instructorCourses: [],
@@ -12,6 +13,9 @@ const courseSlice = createSlice({
     name: 'course',
     initialState,
     reducers: {
+        setStep: (state, action) => {
+            state.step = action.payload
+        },
         setCourses: (state, action) => {
             state.courses = action.payload;
             state.loading = false;

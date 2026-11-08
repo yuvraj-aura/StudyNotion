@@ -2,7 +2,7 @@ const Course = require('../models/course');
 const Category = require("../models/category");
 const User = require("../models/user");
 const Section = require("../models/section");
-const subSection = require("../models/subSections");
+const SubSection = require("../models/subSections");
 const CourseProgress = require("../models/courseProgress");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const convertSecondsToDuration = require("../utils/convertSecondsToDuration");
@@ -27,6 +27,13 @@ exports.createCourse = async (req, res) => {
 
         // file fetch from req.files or req.body
         const thumbnailFile = req.files ? req.files.thumbnailImage : null;
+
+        if (thumbnailFile && !thumbnailFile.mimetype?.startsWith('image/')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Course thumbnail must be an image file',
+            });
+        }
 
         // parse tag & instructions safely
         let tag = [];
@@ -72,9 +79,9 @@ exports.createCourse = async (req, res) => {
             });
         }
 
-        let thumbnailUrl = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80';
+        let thumbnailUrl = '';
         if (thumbnailFile) {
-            const uploadedImg = await uploadImageToCloudinary(thumbnailFile, process.env.FOLDER_NAME);
+            const uploadedImg = await uploadImageToCloudinary(thumbnailFile, process.env.FOLDER_NAME, undefined, undefined, { resource_type: 'image' });
             thumbnailUrl = uploadedImg.secure_url;
         } else if (req.body.thumbnail && typeof req.body.thumbnail === 'string') {
             thumbnailUrl = req.body.thumbnail;
@@ -181,11 +188,14 @@ exports.getCourseDetails = async (req, res) => {
                 }
             })
             .populate("category")
-            .populate("ratingAndReviews")
+            .populate({
+                path: "ratingAndReviews",
+                populate: { path: "user", select: "firstName lastName image" },
+            })
             .populate({
                 path: "courseContent",
                 populate: {
-                    path: "subsections",
+                    path: "subsections", select: "-videoURL -videoUrl",
                 }
             })
             .exec();
@@ -254,7 +264,10 @@ exports.getFullCourseDetails = async (req, res) => {
                 }
             })
             .populate("category")
-            .populate("ratingAndReviews")
+            .populate({
+                path: "ratingAndReviews",
+                populate: { path: "user", select: "firstName lastName image" },
+            })
             .populate({
                 path: "courseContent",
                 populate: {
@@ -263,30 +276,28 @@ exports.getFullCourseDetails = async (req, res) => {
             })
             .exec();
 
-        if (courseDetails.status === "Draft") {
+        if (!courseDetails) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+        const isOwner = req.user.accountType === "Instructor" &&
+            String(courseDetails.instructor?._id) === String(userId);
+        const isEnrolled = courseDetails.studentEnrolled.some((id) => String(id) === String(userId));
+        if (!isOwner && !isEnrolled) {
+            return res.status(403).json({ success: false, message: "Course access denied" });
+        }
+        if (courseDetails.status === "Draft" && !isOwner) {
             return res.status(400).json({
                 success: false,
                 message: 'Accessing a draft course is forbidden',
             });
         }
 
-        let courseProgressCount = await CourseProgress.findOne({
-            courseID: courseId,
-            userId: userId,
-        });
-        console.log("Course Progress  Count ->> ", courseProgressCount);
-
-        if (!courseDetails) {
-            return res.status(404).json({
-                success: false,
-                message: `Could not find the course with ${courseId}`,
-            });
-        }
+        const courseProgressCount = await CourseProgress.findOne({ courseId, userId });
 
         let totalDurationInSeconds = 0;
         courseDetails.courseContent.forEach((content) => {
-            content.subsections.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration);
+            (content.subsections ?? []).forEach((subSection) => {
+                const timeDurationInSeconds = parseInt(subSection.timeDuration, 10) || 0;
                 totalDurationInSeconds += timeDurationInSeconds;
             });
         });
@@ -296,7 +307,7 @@ exports.getFullCourseDetails = async (req, res) => {
             message: 'Full course details fetched Successfully!',
             data: {
                 courseDetails,
-                totalDuration,
+                totalDuration: convertSecondsToDuration(totalDurationInSeconds),
                 completedVideos: courseProgressCount?.completedVideos ? courseProgressCount?.completedVideos : [],
             }
         });
@@ -360,7 +371,7 @@ exports.deleteCourse = async (req, res) => {
         const sections = await Section.find({ _id: { $in: course.courseContent } });
 
         for (const section of sections) {
-            await subSection.deleteMany({ _id: { $in: section.subsections } });
+            await SubSection.deleteMany({ _id: { $in: section.subsections } });
         }
 
         // Delete all sections belonging to the course

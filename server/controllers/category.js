@@ -1,4 +1,5 @@
 const Category = require('../models/category');
+const Course = require('../models/course');
 
 exports.createCategory = async (req, res) => {
     try {
@@ -86,7 +87,8 @@ exports.categoryPageDetails = async (req, res) => {
             });
         }
 
-        const selectedCourses = selectedCategory.course || [];
+        const selectedCourses = await Course.find({ category: categoryId, status: "Published" })
+            .populate("instructor", "firstName lastName image");
 
         // Get courses for other categories 
         const categoriesExceptSelected = await Category.find({
