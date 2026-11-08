@@ -176,10 +176,10 @@ exports.signUp = async (req, res) => {
 exports.login = async (req, res) => {
     try {
         // fetching details from req body
-        const {email, password} = req.body
+        const { email, password } = req.body;
 
         // validation data
-        if (!email || !password){
+        if (!email || !password) {
             return res.status(403).json({
                 success: false,
                 message: 'Please fill all the details carefully!',
@@ -187,9 +187,10 @@ exports.login = async (req, res) => {
         }
 
         // user already registed or not
-        const user = await User.findOne({email}).populate("userProfileDetails");
+        const user = await User.findOne({ email })
+        .populate("userProfileDetails");
 
-        if (!user){
+        if (!user) {
             return res.status(401).json({
                 success: false,
                 message: 'User is not registered!',
@@ -197,7 +198,7 @@ exports.login = async (req, res) => {
         }
 
         // password matching then generate token 
-        if (await bcrypt.compare(password, user.password)){
+        if (await bcrypt.compare(password, user.password)) {
             const payload = {
                 email: user.email,
                 id: user._id,
@@ -213,7 +214,7 @@ exports.login = async (req, res) => {
 
             // creating cookie and sending response
             const options = {
-                expires: new Date(Date.now() + 3*24*60*60 * 1000),
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
                 httpsOnly: true,
             }
             res.cookie("token", token, options).status(200).json({
@@ -223,7 +224,7 @@ exports.login = async (req, res) => {
                 message: 'Logged In successfully!',
             })
         }
-        else{
+        else {
             return res.status(401).json({
                 success: false,
                 message: 'Password is incorrect',
@@ -240,15 +241,15 @@ exports.login = async (req, res) => {
 }
 
 
- 
+
 // change pass
 exports.changePassword = async (req, res) => {
     try {
         // fetching data from req body
-        const {email, newPassword, newConfirmPassword} = req.body; 
+        const { email, newPassword, newConfirmPassword } = req.body;
 
         // validation
-        if (!email || !newPassword || !newConfirmPassword){
+        if (!email || !newPassword || !newConfirmPassword) {
             return res.status(403).json({
                 success: false,
                 message: 'Please fill all the details carefully!',
@@ -256,10 +257,10 @@ exports.changePassword = async (req, res) => {
         }
 
         // get old password, new password, confirm password
-        const existedUser = await User.findOne({email});
-        
+        const existedUser = await User.findOne({ email });
+
         // validation passes, then update password in DB
-        if (newPassword !== newConfirmPassword){
+        if (newPassword !== newConfirmPassword) {
             return res.status(401).json({
                 success: false,
                 message: 'Passwords do not match',
@@ -267,11 +268,11 @@ exports.changePassword = async (req, res) => {
         }
 
         const updatedUserDetails = await User.findOneAndUpdate(
-            {email: email},
+            { email: email },
             {
                 password: newPassword,
             },
-            {new: true},
+            { new: true },
         )
 
         // send mail - passwrod updated

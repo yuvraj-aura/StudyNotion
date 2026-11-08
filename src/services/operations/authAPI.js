@@ -108,6 +108,7 @@ export function login(email, password, navigate) {
       }
 
       toast.success("Login Successful!");
+      dispatch(resetCart());
       dispatch(setToken(response.data.token));
 
       const userImage = response.data?.data?.image

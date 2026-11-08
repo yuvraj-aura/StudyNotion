@@ -1,6 +1,8 @@
 const Profile = require('../models/profile');
 const User = require("../models/user");
+const Course = require("../models/course");
 const CourseProgress = require("../models/courseProgress");
+const bcrypt = require("bcrypt");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const convertSecondsToDuration = require("../utils/convertSecondsToDuration");
 
@@ -98,7 +100,9 @@ exports.getUserDetails = async (req, res) => {
             });   
         }
 
-        const userDetails = await User.findById(id).populate("userProfileDetails").exec();
+        const userDetails = await User.findById(id)
+        .populate("userProfileDetails")
+        .exec();
 
         return res.status(200).json({
             success: true,
@@ -154,7 +158,8 @@ exports.updateProfilePhoto = async (req, res) => {
             profilePhoto,
             process.env.FOLDER_NAME || "profile_photos",
             300,
-            80
+            80,
+            { timeout: 60000, resource_type: "image" }
         );
 
         // update the user's image field in DB
@@ -210,8 +215,8 @@ exports.getEnrolledCourses = async (req, res) => {
             let totalDurationInSeconds = 0;
             let subSectionLength = 0;
 
-            for (const section of course.courseContent || []) {
-                for (const subSection of section.subSection || []) {
+            for (const section of course.courseContent) {
+                for (const subSection of section.subsections || []) {
                     totalDurationInSeconds += parseInt(subSection.timeDuration) || 0;
                     subSectionLength += 1;
                 }
@@ -276,12 +281,27 @@ exports.getUserCart = async (req, res) => {
 exports.syncUserCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { cartCourseIds } = req.body; // array of course ObjectIds
+        const { cartCourseIds, courseId, remove } = req.body || {};
+        const validId = (id) => typeof id === "string" && /^[a-f0-9]{24}$/i.test(id);
+        const singleCourse = courseId !== undefined;
+        if (singleCourse ? !validId(courseId) || typeof remove !== "boolean"
+            : !Array.isArray(cartCourseIds) || !cartCourseIds.every(validId)) {
+            return res.status(400).json({ success: false, message: "Provide valid cart course IDs" });
+        }
+        // Atomic set operations prevent duplicate additions and lost updates across tabs.
+        const ids = singleCourse ? [courseId] : cartCourseIds;
+        const objectIds = [...new Set(ids.map((id) => id.toLowerCase()))]
+            .map((id) => new (require("mongoose").Types.ObjectId)(id));
+        const currentCart = { $ifNull: ["$cart", []] };
+        const nextCart = singleCourse
+            ? remove ? { $setDifference: [currentCart, objectIds] } : { $setUnion: [currentCart, objectIds] }
+            : objectIds;
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { cart: cartCourseIds || [] },
-            { new: true }
+            [{ $set: { cart: nextCart } }],
+            { new: true, updatePipeline: true }
         ).populate("cart").exec();
+        if (!updatedUser) return res.status(404).json({ success: false, message: "User not found" });
 
         return res.status(200).json({
             success: true,
@@ -293,6 +313,116 @@ exports.syncUserCart = async (req, res) => {
             success: false,
             message: "Failed to sync cart in database",
             error: error.message,
+        });
+    }
+};
+
+// Change Password
+exports.changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password and new password are required.",
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+
+        const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isPasswordMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Old password is incorrect.",
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully!",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to change password.",
+            error: error.message,
+        });
+    }
+};
+
+// Delete Profile (soft delete)
+exports.deleteProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+
+        user.isDeleted = true;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile deleted successfully!",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete profile.",
+            error: error.message,
+        });
+    }
+};
+
+
+exports.instructorDashboard = async (req, res) => {
+    try {
+        const courseDetails = await Course.find({instructor: req.user.id});
+
+        const courseData = courseDetails.map((course) => {
+            const totalStudentsEnrolled = course.studentEnrolled.length
+            const totalAmountGenerated = totalStudentsEnrolled * course.price
+
+            // create a new obj with the additional features
+            const courseDataWithStats = {
+                _id: course._id,
+                courseName: course.name,
+                courseDesc: course.description,
+                totalStudentsEnrolled,
+                totalAmountGenerated,
+            }
+
+            return courseDataWithStats
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: 'Instructor Details fetched Successfully!',
+            courses: courseData,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: '',
+            error: err.message
         });
     }
 };

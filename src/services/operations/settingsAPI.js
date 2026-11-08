@@ -1,9 +1,15 @@
 import { toast } from "react-hot-toast";
 import { apiConnector } from "../apiConnector";
-import { profileEndpoints } from "../APIs";
+import { settingsEndpoints } from "../APIs";
 import { setUser } from "../../redux/slices/profileSlice";
+// import { response } from "express";
 
-const { UPDATE_PROFILE_PICTURE_API } = profileEndpoints;
+const {
+    UPDATE_PROFILE_PICTURE_API,
+    UPDATE_PROFILE_API,
+    CHANGE_PASSWORD_API,
+    DELETE_PROFILE_API,
+} = settingsEndpoints;
 
 /**
  * Upload a new profile photo to Cloudinary via the backend.
@@ -13,49 +19,42 @@ const { UPDATE_PROFILE_PICTURE_API } = profileEndpoints;
  * @param {FormData} formData - must contain field "profilePhoto" (File)
  */
 export function updateProfilePicture(token, formData) {
-  return async (dispatch) => {
-    const toastId = toast.loading("Uploading profile photo...");
-    try {
-      const response = await apiConnector(
-        "PUT",
-        UPDATE_PROFILE_PICTURE_API,
-        formData,
-        {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+    return async (dispatch) => {
+        const toastId = toast.loading("Uploading profile photo...");
+        try {
+            const response = await apiConnector(
+                "PUT",
+                UPDATE_PROFILE_PICTURE_API,
+                formData,
+                {
+                    Authorization: `Bearer ${token}`,
+                },
+                undefined,
+                { timeout: 90000 }
+            );
+
+            console.log("UPDATE_PROFILE_PICTURE_API Response ->> ", response)
+
+            if (!response?.data?.success) {
+                throw new Error(response?.data?.message || "Upload failed");
+            }
+
+            const updatedUser = response.data.data;
+            dispatch(setUser(updatedUser));
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+
+            toast.success("Profile photo updated successfully!", { id: toastId });
+
+            return updatedUser;
+        } catch (error) {
+            console.error("updateProfilePicture error:", error);
+            toast.error(error.code === "ECONNABORTED"
+                ? "Upload timed out. Refresh your profile to check whether it saved, then retry if needed."
+                : error?.response?.data?.message || error?.message || "Failed to upload photo",
+                { id: toastId });
+            return null;
         }
-      );
-
-      if (!response?.data?.success) {
-        throw new Error(response?.data?.message || "Upload failed");
-      }
-
-      const updatedUser = response.data.data;
-      dispatch(setUser(updatedUser));
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-
-      toast.update(toastId, {
-        render: "Profile photo updated successfully!",
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
-
-      return updatedUser;
-    } catch (error) {
-      console.error("updateProfilePicture error:", error);
-      toast.update(toastId, {
-        render:
-          error?.response?.data?.message ||
-          error?.message ||
-          "Failed to upload photo",
-        type: "error",
-        isLoading: false,
-        autoClose: 4000,
-      });
-      return null;
-    }
-  };
+    };
 }
 
 /**
@@ -67,37 +66,130 @@ export function updateProfilePicture(token, formData) {
  * @param {string} firstName - user's first name
  * @param {string} lastName  - user's last name
  */
+
+
 export function removeProfilePicture(token, firstName, lastName) {
-  return async (dispatch) => {
-    const toastId = toast.loading("Removing profile photo...");
-    try {
-      const seed = encodeURIComponent(`${firstName} ${lastName}`);
-      const avatarUrl = `https://api.dicebear.com/5.x/initials/svg?seed=${seed}`;
+    return async (dispatch) => {
+        const toastId = toast.loading("Removing profile photo...");
+        try {
+            const seed = encodeURIComponent(`${firstName} ${lastName}`);
+            const avatarUrl = `https://api.dicebear.com/5.x/initials/svg?seed=${seed}`;
 
-      // Read current user from localStorage and update the image field
-      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-      const updatedUser = { ...currentUser, image: avatarUrl };
+            // Read current user from localStorage and update the image field
+            const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+            const updatedUser = { ...currentUser, image: avatarUrl };
 
-      dispatch(setUser(updatedUser));
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+            dispatch(setUser(updatedUser));
+            localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      toast.update(toastId, {
-        render: "Profile photo removed.",
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
+            toast.success("Profile photo removed.", { id: toastId });
 
-      return updatedUser;
-    } catch (error) {
-      console.error("removeProfilePicture error:", error);
-      toast.update(toastId, {
-        render: "Failed to remove profile photo.",
-        type: "error",
-        isLoading: false,
-        autoClose: 4000,
-      });
-      return null;
+            return updatedUser;
+        } catch (error) {
+            console.error("removeProfilePicture error:", error);
+            toast.error("Failed to remove profile photo.", { id: toastId });
+            return null;
+        }
+    };
+}
+
+
+export function updateProfile(token, formData) {
+    return async (dispatch) => {
+        const toastId = toast.loading("Updating Profile...");
+        try {
+            const response = await apiConnector(
+                "PUT",
+                UPDATE_PROFILE_API,
+                formData,
+                {
+                    Authorization: `Bearer ${token}`,
+                }
+            )
+
+            console.log("UPDATE_PROFILE_API Response ->> ", response)
+
+            if (!response.data.success) {
+                throw new Error(response.data.message)
+            }
+
+            const userImage = response.data.updatedUserDetails.image ? response.data.updatedUserDetails.image
+                : `https://api.dicebear.com/5.x/initials/svg?seed=${response.data.updatedUserDetails.firstName} ${response.data.updatedUserDetails.lastName}`
+
+            dispatch(
+                setUser({ ...response.data.updatedUserDetails, image: userImage })
+            )
+
+            toast.success("Profile Updated successfully")
+        } catch (err) {
+            console.error("UPDATE_PROFILE_API error:", err);
+            toast.update(toastId, {
+                render: "Failed to remove profile photo.",
+                type: "error",
+                isLoading: false,
+                autoClose: 4000,
+            });
+            return null;
+        } finally {
+            toast.dismiss(toastId);
+        }
     }
-  };
+}
+
+export async function changePassword(token, formData) {
+    const toastId = toast.loading("Loading...")
+    try {
+        const response = await apiConnector(
+            "POST",
+            CHANGE_PASSWORD_API,
+            formData,
+            {
+                Authorization: `Bearer ${token}`
+            },
+        )
+        console.log("CHANGE_PASSWORD_API Reponse ->> ", response)
+
+        if (!response.data.success) {
+            throw new Error(response.data.message)
+        }
+
+        toast.success("Password Changed Successfully")
+    } catch (err) {
+        console.error("CHANGE_PASSWORD_API error:", err);
+        toast.error(err.response.data.message);
+    } finally {
+        toast.dismiss(toastId);
+    }
+    return response
+}
+
+export function deleteProfile(token, navigate) {
+    return async (dispatch) => {
+        const toastId = toast.loading("Loading...")
+        try {
+            const response = await apiConnector(
+                "DELETE",
+                DELETE_PROFILE_API,
+                null,
+                {
+                    Authorization: `Bearer ${token}`
+                }
+
+            )
+            console.log("DELETE_PROFILE_API Response ->> ", response)
+
+            if (!response.data.success) {
+                throw new Error(response.data.message)
+            }
+
+            toast.success("Profile Deleted Successfully")
+            dispatch(logout(navigate))
+        } catch (err) {
+            console.error("DELETE_PROFILE_API Error ->> ", err)
+            toast.error(err.response.data.message);
+        } finally {
+            toast.dismiss(toastId);
+        }
+        return response
+    }
 }
