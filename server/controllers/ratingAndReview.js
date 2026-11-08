@@ -1,10 +1,19 @@
 const RatingAndReviews = require('../models/ratingAndReviews');
 const Course = require("../models/course");
+const mongoose = require("mongoose");
 
 exports.createRating = async (req, res) => {
     try {
         // fetch files from req body
-        const { rating, review, courseId } = req.body
+        const { rating, review, courseId } = req.body || {};
+        if (!mongoose.isValidObjectId(courseId) || typeof rating !== "number" ||
+            !Number.isFinite(rating) || rating < 1 || rating > 5 ||
+            typeof review !== "string" || !review.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "A valid course, rating from 1 to 5, and review are required",
+            });
+        }
 
         // get usr id
         const userId = req.user.id;
@@ -31,7 +40,10 @@ exports.createRating = async (req, res) => {
         // check if user already reviewed the course
         const alreadyReviewed = await RatingAndReviews.findOne({
             user: userId,
-            course: courseId,
+            $or: [
+                { course: courseId },
+                { _id: { $in: courseDetails.ratingAndReviews || [] } },
+            ],
         });
         if (alreadyReviewed) {
             return res.status(400).json({
@@ -43,7 +55,7 @@ exports.createRating = async (req, res) => {
         // creating rating 
         const ratingAndReview = await RatingAndReviews.create({
             rating,
-            review,
+            review: review.trim(),
             course: courseId,
             user: userId,
         })
@@ -53,13 +65,17 @@ exports.createRating = async (req, res) => {
         const updatedCourseDetails = await Course.findByIdAndUpdate(
             { _id: courseId },
             {
-                $push: {
+                $addToSet: {
                     ratingAndReviews: ratingAndReview._id,
                 }
             },
             { new: true },
         );
-        console.log(updatedCourseDetails);
+        if (!updatedCourseDetails) {
+            await RatingAndReviews.findByIdAndDelete(ratingAndReview._id);
+            return res.status(404).json({ success: false, message: "Course no longer exists" });
+        }
+        await ratingAndReview.populate("user", "firstName lastName image");
 
         // return resp
         return res.status(200).json({
@@ -136,12 +152,13 @@ exports.getAllRatingAndReview = async (req, res) => {
             .sort({ rating: "desc" })
             .populate({
                 path: "user",
-                select: "firstName lastName enail image",
+                select: "firstName lastName email image",
             })
             .populate({
                 path: "course",
                 select: "name",
             })
+            .exec();
 
         return res.status(200).json({
             success: true,

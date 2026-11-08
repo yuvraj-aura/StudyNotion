@@ -32,7 +32,7 @@ const ViewCourse = () => {
 
             let lectures = 0;
             courseData?.courseDetails?.courseContent?.forEach((sec) => {
-                lectures += sec?.subSection?.length || 0;
+                lectures += sec?.subsections?.length || 0;
             });
 
             dispatch(setTotalNoOfLectures(lectures));

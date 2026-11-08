@@ -54,7 +54,7 @@ export const fetchCourseDetails = async (courseId) => {
         result = response.data;
     } catch (err) {
         console.log("Get course details API error ->> ", err);
-        result = err.response.data
+        result = err.response?.data ?? null
     }
     toast.dismiss(toastId);
     return result;
@@ -85,7 +85,6 @@ export const addCourseDetails = async (data, token) => {
     const toastId = toast.loading("Loading...");
     try {
         const response = await apiConnector("POST", CREATE_COURSE_API, data, {
-            'Content-Type': "multipart/form-data",
             Authorization: `Bearer ${token}`,
         });
         console.log("CREATE COURSE API RESPONSE:", response);
@@ -348,8 +347,8 @@ export const getFullDetailsOfCourse = async (courseId, token) => {
         result = response?.data?.data;
     } catch (error) {
         console.log("COURSE FULL DETAILS API error ->> ", error)
-        result = error.response.data
-        toast.error(error.response.data.message)
+        result = error.response?.data ?? null
+        toast.error(error.response?.data?.message || "Could not load course details")
     }
     toast.dismiss(toastId)
     return result

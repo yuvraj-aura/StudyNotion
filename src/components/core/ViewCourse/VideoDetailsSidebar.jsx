@@ -31,11 +31,11 @@ const VideoDetailsSidebar = ({ setReviewModal }) => {
 
         if (currentSectionIndex === -1) return;
 
-        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subSection?.findIndex(
+        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subsections?.findIndex(
             (sub) => sub._id === subSectionId
         );
 
-        const activeSubSecId = courseSectionData[currentSectionIndex]?.subSection?.[currentSubSectionIndex]?._id;
+        const activeSubSecId = courseSectionData[currentSectionIndex]?.subsections?.[currentSubSectionIndex]?._id;
 
         setActiveStatus(courseSectionData[currentSectionIndex]?._id);
         if (activeSubSecId) {
@@ -50,8 +50,10 @@ const VideoDetailsSidebar = ({ setReviewModal }) => {
 
     return (
         <aside className="h-[calc(100vh-3.5rem)] w-full max-w-87.5 border-r border-r-richblack-700 bg-richblack-800 flex flex-col select-none shrink-0">
+            
             {/* Header / Meta Section */}
             <div className="p-4 border-b border-richblack-700 bg-richblack-800/80 backdrop-blur-sm sticky top-0 z-10">
+                
                 {/* Actions Bar */}
                 <div className="flex items-center justify-between gap-2 mb-4">
                     <button
@@ -68,14 +70,14 @@ const VideoDetailsSidebar = ({ setReviewModal }) => {
                         className="flex items-center gap-1.5 text-xs font-semibold text-richblack-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-1.5 rounded-lg transition-all duration-200 shadow-[0_2px_8px_rgba(255,214,10,0.25)] hover:shadow-[0_4px_12px_rgba(255,214,10,0.35)] cursor-pointer"
                     >
                         <AiFillStar className="text-sm" />
-                        <span>Review</span>
+                        <span>Add Review</span>
                     </button>
                 </div>
 
                 {/* Course Title & Progress Bar */}
                 <div>
                     <h2 className="text-base font-bold text-richblack-5 line-clamp-1 leading-snug">
-                        {courseEntireData?.name || "Course Content"}
+                        {courseEntireData?.name}
                     </h2>
                     
                     {/* Progress Info */}
@@ -107,8 +109,8 @@ const VideoDetailsSidebar = ({ setReviewModal }) => {
                 ) : (
                     courseSectionData?.map((section) => {
                         const isSectionOpen = activeStatus === section?._id;
-                        const sectionLecturesCount = section?.subSection?.length || 0;
-                        const sectionCompletedCount = section?.subSection?.filter(
+                        const sectionLecturesCount = section?.subsections?.length || 0;
+                        const sectionCompletedCount = section?.subsections?.filter(
                             (item) => completedLectures.includes(item?._id)
                         )?.length || 0;
 
@@ -144,7 +146,7 @@ const VideoDetailsSidebar = ({ setReviewModal }) => {
                                 {/* Subsections / Lectures List */}
                                 {isSectionOpen && (
                                     <div className="bg-richblack-900/60 py-1 divide-y divide-richblack-800">
-                                        {section?.subSection?.map((topic) => {
+                                        {section?.subsections?.map((topic) => {
                                             const isSelected = videobarActive === topic?._id;
                                             const isCompleted = completedLectures.includes(topic?._id);
 

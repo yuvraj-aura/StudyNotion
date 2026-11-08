@@ -13,7 +13,6 @@ import {
 import { 
     IoPlaySkipForward, 
     IoPlaySkipBack, 
-    IoPlay, 
     IoInformationCircleOutline 
 } from "react-icons/io5";
 import IconBtn from '../../common/IconBtn';
@@ -45,7 +44,7 @@ const VideoDetails = () => {
             }
 
             const currentSection = courseSectionData.find((sec) => sec._id === sectionId);
-            const currentSubSection = currentSection?.subSection?.find((sub) => sub._id === subSectionId);
+            const currentSubSection = currentSection?.subsections?.find((sub) => sub._id === subSectionId);
 
             if (currentSubSection) {
                 setVideoData(currentSubSection);
@@ -61,7 +60,7 @@ const VideoDetails = () => {
         const currentSectionIndex = courseSectionData.findIndex((data) => data._id === sectionId);
         if (currentSectionIndex === -1) return true;
 
-        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subSection?.findIndex(
+        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subsections?.findIndex(
             (data) => data._id === subSectionId
         );
 
@@ -74,8 +73,8 @@ const VideoDetails = () => {
         if (currentSectionIndex === -1) return true;
 
         const totalSections = courseSectionData.length;
-        const currentSubSectionLength = courseSectionData[currentSectionIndex]?.subSection?.length || 0;
-        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subSection?.findIndex(
+        const currentSubSectionLength = courseSectionData[currentSectionIndex]?.subsections?.length || 0;
+        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subsections?.findIndex(
             (data) => data._id === subSectionId
         );
 
@@ -90,10 +89,10 @@ const VideoDetails = () => {
         const currentSectionIndex = courseSectionData.findIndex((data) => data._id === sectionId);
         if (currentSectionIndex === -1) return;
 
-        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subSection?.findIndex(
+        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subsections?.findIndex(
             (data) => data._id === subSectionId
         );
-        const currentSectionSubSections = courseSectionData[currentSectionIndex]?.subSection || [];
+        const currentSectionSubSections = courseSectionData[currentSectionIndex]?.subsections || [];
 
         // If there are more lectures in the same section
         if (currentSubSectionIndex < currentSectionSubSections.length - 1) {
@@ -102,7 +101,7 @@ const VideoDetails = () => {
         } else if (currentSectionIndex < courseSectionData.length - 1) {
             // Go to the first lecture of the next section
             const nextSection = courseSectionData[currentSectionIndex + 1];
-            const nextSubSectionId = nextSection?.subSection?.[0]?._id;
+            const nextSubSectionId = nextSection?.subsections?.[0]?._id;
             if (nextSection && nextSubSectionId) {
                 navigate(`/view-course/${courseId}/section/${nextSection._id}/sub-section/${nextSubSectionId}`);
             }
@@ -114,18 +113,18 @@ const VideoDetails = () => {
         const currentSectionIndex = courseSectionData.findIndex((data) => data._id === sectionId);
         if (currentSectionIndex === -1) return;
 
-        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subSection?.findIndex(
+        const currentSubSectionIndex = courseSectionData[currentSectionIndex]?.subsections?.findIndex(
             (data) => data._id === subSectionId
         );
 
         // Previous video in same section
         if (currentSubSectionIndex > 0) {
-            const prevSubSectionId = courseSectionData[currentSectionIndex].subSection[currentSubSectionIndex - 1]?._id;
+            const prevSubSectionId = courseSectionData[currentSectionIndex].subsections[currentSubSectionIndex - 1]?._id;
             navigate(`/view-course/${courseId}/section/${sectionId}/sub-section/${prevSubSectionId}`);
         } else if (currentSectionIndex > 0) {
             // Last video of the previous section
             const prevSection = courseSectionData[currentSectionIndex - 1];
-            const prevSubSections = prevSection?.subSection || [];
+            const prevSubSections = prevSection?.subsections || [];
             const prevSubSectionId = prevSubSections[prevSubSections.length - 1]?._id;
             if (prevSection && prevSubSectionId) {
                 navigate(`/view-course/${courseId}/section/${prevSection._id}/sub-section/${prevSubSectionId}`);
@@ -168,7 +167,7 @@ const VideoDetails = () => {
                     <>
                         <video
                             ref={videoRef}
-                            src={videoData?.videoUrl}
+                            src={videoData?.videoURL ?? videoData?.videoUrl}
                             playsInline
                             controls={!videoEnded}
                             onEnded={() => setVideoEnded(true)}
