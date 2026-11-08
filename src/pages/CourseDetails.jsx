@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { FaStar, FaGlobe, FaClock, FaChevronDown } from "react-icons/fa";
+import { FaGlobe, FaClock, FaChevronDown } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { fetchCourseDetails } from "../services/operations/courseDetailsAPI";
 import getAvgRating from "../utils/avgRating";
 import Error from "./Error";
 import Spinner from "../components/Spinner";
-import ConfirmationModal from "../components/common/ConfirmationModal";
 import CourseDetailsCard from "../components/core/Course/CourseDetailsCard";
 import RatingStars from "../components/common/RatingStars";
 import { buyCourse } from "../services/operations/studentFeaturesAPI";
@@ -19,18 +18,17 @@ const CourseDetails = () => {
     const { token } = useSelector((state) => state.auth);
     const { user, loading: profileLoading } = useSelector((state) => state.profile);
 
-    const [confirmationModal, setConfirmationModal] = useState(null);
     const [courseData, setCourseData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const [isActive, setIsActive] = useState([]);
     const handleActive = (id) => {
-        setIsActive(
-            !isActive.includes(id) 
-              ?  isActive.concat(id)
-             : isActive.filter((e) => e != id)
-        )
-    }
+        setIsActive((activeSections) =>
+            activeSections.includes(id)
+                ? activeSections.filter((sectionId) => sectionId !== id)
+                : [...activeSections, id]
+        );
+    };
 
 
     // Fetch dynamic course details from database
@@ -42,6 +40,11 @@ const CourseDetails = () => {
                 console.log("Course details API response:", result);
                 if (result) {
                     setCourseData(result);
+                    setIsActive(
+                        (result.data?.courseDetails?.courseContent || []).map(
+                            (section, index) => section._id || index
+                        )
+                    );
                 }
             } catch (err) {
                 console.log("Could not fetch course details ->>", err);
@@ -58,7 +61,7 @@ const CourseDetails = () => {
     // Calculate average rating
     const [avgReviewCount, setAvgReviewCount] = useState(0);
     useEffect(() => {
-        const reviews = courseData?.data?.ratingAndReviews || [];
+        const reviews = courseData?.data?.courseDetails?.ratingAndReviews || [];
         const count = getAvgRating(reviews);
         setAvgReviewCount(count);
     }, [courseData]);
@@ -67,7 +70,7 @@ const CourseDetails = () => {
     const [totalNoOfLectures, setTotalNoOfLectures] = useState(0);
     useEffect(() => {
         let lectures = 0;
-        const sections = courseData?.data?.courseContent || [];
+        const sections = courseData?.data?.courseDetails?.courseContent || [];
         sections.forEach((sec) => {
             lectures += sec?.subsections?.length || sec?.subSection?.length || 0;
         });
@@ -76,7 +79,7 @@ const CourseDetails = () => {
 
     const handleBuyNow = () => {
         if (!token) {
-            toast.info("Please login to enroll");
+            toast("Please login to enroll");
             navigate("/signin");
             return;
         }
@@ -97,11 +100,11 @@ const CourseDetails = () => {
         );
     }
 
-    if (!courseData || !courseData.success || !courseData.data) {
+    if (!courseData || !courseData.success || !courseData.data?.courseDetails) {
         return <Error />;
     }
 
-    const course = courseData.data;
+    const { courseDetails: course, totalDuration } = courseData.data;
     const {
         name,
         description,
@@ -112,6 +115,14 @@ const CourseDetails = () => {
         studentEnrolled = [],
         createdAt,
     } = course;
+
+    const sectionIds = courseContent.map((section, index) => section._id || index);
+    const allSectionsCollapsed = !sectionIds.some((id) => isActive.includes(id));
+    const toggleAllSections = () => {
+        setIsActive((activeSections) =>
+            sectionIds.some((id) => activeSections.includes(id)) ? [] : sectionIds
+        );
+    };
 
     const instructorFullName = instructor
         ? `${instructor.firstName || ""} ${instructor.lastName || ""}`.trim()
@@ -189,7 +200,7 @@ const CourseDetails = () => {
                     <div className="flex items-center justify-between">
                         <div>
                             <h2 className="text-2xl font-bold text-richblack-5">Course Content</h2>
-                            <p className="flex justify-between w-180 text-xs text-richblack-400 mt-1">
+                            <div className="flex justify-between w-180 text-xs text-richblack-400 mt-1">
                                 <div className="flex gap-x-1 border-white">
                                     <p>
                                         {courseContent.length} section(s)
@@ -204,23 +215,23 @@ const CourseDetails = () => {
                                         {" • "}
                                     </p>
                                     <p>
-                                        {course?.totalDuration} Total Duration
+                                        {totalDuration} Total Duration
                                     </p>
                                 </div>
 
-                                <div className="flex gap-2 items-center">
-                                    <button 
-                                    className="text-yellow-400"
-                                    onClick = {() => setIsActive([])}
-                                    >
-                                        Collapse All Sections
-                                    </button>
+                                <button
+                                    type="button"
+                                    className="flex gap-2 items-center text-yellow-50"
+                                    onClick={toggleAllSections}
+                                    disabled={courseContent.length === 0}
+                                >
+                                    {allSectionsCollapsed ? "Expand All Sections" : "Collapse All Sections"}
                                     <FaChevronDown
-                                    className="text-xs text-yellow-50" 
-                                    // onClick={}
+                                        aria-hidden="true"
+                                        className={`text-xs transition-transform duration-300 ease-in-out motion-reduce:transition-none ${allSectionsCollapsed ? "rotate-180" : "rotate-0"}`}
                                     />
-                                </div>
-                            </p>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -228,28 +239,49 @@ const CourseDetails = () => {
                         <div className="space-y-3 border border-richblack-700 rounded-xl overflow-hidden bg-richblack-800 p-4">
                             {courseContent.map((sec, idx) => {
                                 const subSecs = sec.subsections || sec.subSection || [];
+                                const sectionId = sec._id || idx;
+                                const isExpanded = isActive.includes(sectionId);
+                                const panelId = `course-${courseId}-section-${sectionId}`;
                                 return (
-                                    <div key={sec._id || idx} className="rounded-lg border border-richblack-700 overflow-hidden">
-                                        <div className="flex items-center justify-between p-4 px-6 bg-richblack-700/60 font-medium text-sm text-richblack-5">
-                                            <div className="flex items-center gap-x-2">
-                                                <FaChevronDown className="text-xs text-yellow-50" />
+                                    <div key={sectionId} className="rounded-lg border border-richblack-700 overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleActive(sectionId)}
+                                            aria-expanded={isExpanded}
+                                            aria-controls={panelId}
+                                            className="flex w-full items-center justify-between p-4 px-6 bg-richblack-700/60 font-medium text-left text-sm text-richblack-5"
+                                        >
+                                            <span className="flex items-center gap-x-2">
+                                                <FaChevronDown
+                                                    aria-hidden="true"
+                                                    className={`text-xs text-yellow-50 transition-transform duration-300 ease-in-out motion-reduce:transition-none ${isExpanded ? "rotate-0" : "rotate-180"}`}
+                                                />
                                                 <span>{sec.sectionName}</span>
-                                            </div>
+                                            </span>
                                             <span className="text-xs text-yellow-50">
                                                 {subSecs.length} lecture(s)
                                             </span>
-                                        </div>
+                                        </button>
 
-                                        {subSecs.length > 0 && (
-                                            <div className="bg-richblack-900/60 divide-y divide-richblack-800 px-6 py-2">
-                                                {subSecs.map((sub, sIdx) => (
-                                                    <div key={sub._id || sIdx} className="py-2.5 flex items-center justify-between text-xs text-richblack-100">
-                                                        <span>▶ {sub.title}</span>
-                                                        <span className="text-richblack-400">{sub.timeDuration || "10m"}</span>
+                                        <div
+                                            id={panelId}
+                                            aria-hidden={!isExpanded}
+                                            inert={!isExpanded}
+                                            className={`grid transition-[grid-template-rows,opacity] duration-300 ease-in-out motion-reduce:transition-none ${isExpanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                                        >
+                                            <div className="min-h-0 overflow-hidden">
+                                                {subSecs.length > 0 && (
+                                                    <div className="bg-richblack-900/60 divide-y divide-richblack-800 px-6 py-2">
+                                                        {subSecs.map((sub, sIdx) => (
+                                                            <div key={sub._id || sIdx} className="py-2.5 flex items-center justify-between text-xs text-richblack-100">
+                                                                <span>▶ {sub.title}</span>
+                                                                <span className="text-richblack-400">{sub.timeDuration || "10m"}</span>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -260,7 +292,6 @@ const CourseDetails = () => {
                 </div>
             </div>
 
-            {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
         </div>
     );
 };

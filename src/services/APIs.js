@@ -1,5 +1,5 @@
 
-const BASE_URL = import.meta.env.VITE_APP_BASE_URL || "http://localhost:3000/api/v1";
+const BASE_URL = "/api/v1";
 
 // AUTH ENDPOINTS
 export const endpoints = {
@@ -10,32 +10,22 @@ export const endpoints = {
     RESETPASSWORD_API: BASE_URL + "/auth/reset-password",
 };
 
-export const categories = {
-    CATEGORIES_API: BASE_URL + "/course/showAllCategories",
-}
 
-export const catalogData = {
-    CATALOGPAGEDATA_API: BASE_URL + "/course/categoryPageDetails",
-}
-
-// user endpoints
+// profile endpoints
 export const profileEndpoints = {
     GET_USER_DETAILS_API: BASE_URL + "/profile/getUserDetails",
     GET_USER_ENROLLED_COURSES_API: BASE_URL + "/profile/getEnrolledCourses",
     GET_USER_CART_API: BASE_URL + "/profile/getUserCart",
     SYNC_USER_CART_API: BASE_URL + "/profile/syncUserCart",
-    UPDATE_PROFILE_PICTURE_API: BASE_URL + "/profile/updateProfilePhoto",
-    UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
+    GET_INSTRUCTOR_API: BASE_URL + "/profile/instructorDashboard"
 }
 
-// students endpoints
+// Student Endpoints
 export const studentEndpoints = {
     COURSE_PAYMENT_API: BASE_URL + "/payment/capturePayment",
-    COURSE_VERIFY_API: BASE_URL + "/payment/verifyPayment",
-    SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
+    COURSE_VERIFY_API: BASE_URL +  "/payment/verifyPayment",
 }
 
-// course endpoints
 export const courseEndpoints = {
     GET_ALL_COURSE_API: BASE_URL + "/course/getAllCourses",
     COURSE_DETAILS_API: BASE_URL + "/course/getCourseDetails",
@@ -55,7 +45,26 @@ export const courseEndpoints = {
     CREATING_RATING_API: BASE_URL + "/course/createRating",
 }
 
+
 // RATING AND REVIEWS
 export const ratingEndpoints = {
-    
+    REVIEWS_DETAILS_API: BASE_URL + "/course/getReviews",
+}
+
+
+export const categories = {
+    CATEGORIES_API: BASE_URL + "/course/showAllCategories",
+}
+
+export const catalogData = {
+    CATALOGPAGEDATA_API: BASE_URL + "/course/getCategoryPageDetails",
+}
+
+
+// settings endpoints
+export const settingsEndpoints = {
+    UPDATE_PROFILE_PICTURE_API: BASE_URL + "/profile/updateProfilePhoto",
+    UPDATE_PROFILE_API: BASE_URL + "/profile/updateProfile",
+    CHANGE_PASSWORD_API: BASE_URL + "/profile/changePassword",
+    DELETE_PROFILE_API: BASE_URL + "/profile/deleteProfile",
 }

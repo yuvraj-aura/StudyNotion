@@ -1,7 +1,12 @@
 const Razorpay = require("razorpay");
-require("dotenv").config();
+const path = require("node:path");
 
-exports.instance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY,
-    key_secret: process.env.RAZORPAY_SECRET
+require("dotenv").config({ path: path.join(__dirname, "../.env"), quiet: true });
+
+const keyId = process.env.RAZORPAY_KEY;
+const instance = new Razorpay({
+    key_id: keyId,
+    key_secret: process.env.RAZORPAY_SECRET,
 });
+
+module.exports = { instance, keyId };

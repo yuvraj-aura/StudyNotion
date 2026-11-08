@@ -15,10 +15,19 @@ const dbConnect = require("./config/database");
 const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload")
 
-require("dotenv").config();
-const port = process.env.PORT || 3000;
+require("dotenv").config({ path: require("node:path").join(__dirname, ".env") });
+const port = 4000;
 
 // importing middlewares
+app.post("/api/v1/payment/webhook", 
+    express.raw({ 
+        type: "application/json" 
+    }), 
+    require("./controllers/payments").paymentWebhook
+);
+// Keep the webhook body raw for signature verification; parse JSON for all other API routes.
+
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(
