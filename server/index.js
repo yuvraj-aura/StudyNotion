@@ -19,10 +19,10 @@ require("dotenv").config({ path: require("node:path").join(__dirname, ".env") })
 const port = 4000;
 
 // importing middlewares
-app.post("/api/v1/payment/webhook", 
-    express.raw({ 
-        type: "application/json" 
-    }), 
+app.post("/api/v1/payment/webhook",
+    express.raw({
+        type: "application/json"
+    }),
     require("./controllers/payments").paymentWebhook
 );
 // Keep the webhook body raw for signature verification; parse JSON for all other API routes.
@@ -32,7 +32,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || ["http://localhost:5173", "http://127.0.0.1:5173"],
+        origin: [
+            "http://localhost:5173",
+            "https://study-notion-zeta-lake.vercel.app"
+        ],
         credentials: true,
     })
 )
