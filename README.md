@@ -1,102 +1,191 @@
-# StudyNotion — EdTech Web Application
+# StudyNotion
 
-**StudyNotion** is a modern, full-featured e-learning platform frontend built with **React 19**, **Vite**, **React Router v7**, and **pure modular CSS**. It delivers an authentic, high-contrast dark-mode user experience with interactive course filtering, dynamic API data integration, role-based authentication flows, protected routes, and informative landing pages.
+StudyNotion is a full-stack learning platform where students can discover courses, purchase access, track their learning progress, and leave reviews. Instructors can create and manage course content, publish courses, and view enrollment and income insights from their dashboard.
 
----
+The project uses a React/Vite client and an Express/MongoDB API. It includes role-based access for students, instructors, and administrators, plus integrations for Razorpay payments, Cloudinary media uploads, and transactional email.
 
-## Features
+## What the app includes
 
-- **StudyNotion Dark Design System**:
-  - Custom dark theme with layered surface elevation (`#000814`, `#161D29`, `#2C333F`).
-  - High-contrast visual accents using signature StudyNotion Yellow (`#FFD60A`) and Cyan/Blue (`#47A5C5`).
-  - Pure modular CSS architecture without third-party CSS frameworks.
+### Student experience
 
-- **Interactive Course Catalog & Dashboard**:
-  - **Dynamic Course Categories**: Filter courses by category (*All, Development, Business, Design, Lifestyle*).
-  - **Elevated Course Cards**: High-contrast card designs with smooth hover lift micro-interactions, thumbnail previews, and interactive like/unlike bookmarking with toast feedback.
-  - **Loading & Error Handling**: Custom loading spinner and dedicated error recovery/retry states.
+- **Course discovery:** Browse published courses by category and open detailed course pages with curriculum, instructor information, ratings, and reviews.
+- **Search and catalog filtering:** Use category-aware catalog pages and course cards to narrow down available learning content.
+- **Persistent cart:** Add and remove courses from the cart while keeping the client state synchronized with the authenticated user's server-side cart.
+- **Razorpay checkout:** Start a single-course or multi-course purchase, open the Razorpay checkout modal, and verify payment before enrollment is completed.
+- **Enrolled courses:** Access purchased courses from the dashboard and continue learning from the course's sections and lectures.
+- **Lecture progress:** Mark lectures complete and keep completion state associated with the enrolled course.
+- **Ratings and reviews:** Submit course ratings and written reviews after learning from a course.
 
-- **Authentication & Protected Routing**:
-  - **Sign In & Sign Up** forms with Student/Instructor role toggling.
-  - **Interactive Password Visibility**: Smooth show/hide password toggles (`FaRegEye` / `FaRegEyeSlash`).
-  - **Protected Dashboard (`PrivateRoute`)**: Secure navigation restricting authenticated dashboard access.
-  - Google Sign-In button integration and responsive visual layouts with backdrop image frames.
+### Instructor tools
 
-- **Rich Landing & Info Pages**:
-  - **Home**: Hero section with interactive code playground preview, metrics/statistics bar, key platform features, and popular learning track roadmaps.
-  - **About Us**: Founding story, mission/vision showcase, and core principles.
-  - **Contact Us**: Multi-channel support details and an interactive contact query form with Toast notifications.
+- **Course creation:** Create courses with descriptions, pricing, tags, learning outcomes, categories, and thumbnails.
+- **Curriculum builder:** Add sections and video subsections, edit course content, and manage course publishing status.
+- **Course management:** View instructor-owned courses, open an edit flow, and delete courses when needed.
+- **Instructor dashboard:** See total courses, enrolled students, and generated income, with interactive Chart.js visualizations for student enrollment and income by course.
 
-- **Fully Responsive**: Seamlessly optimized across desktop, tablet, and mobile devices.
+### Account and platform features
 
----
+- **OTP-based registration:** Verify new accounts through an email OTP before creating the user and profile records.
+- **JWT authentication:** Authenticate API requests and protect dashboard and role-specific routes with Student, Instructor, and Admin middleware.
+- **Profile management:** Update profile details and profile photos, change passwords, and delete an account.
+- **Password recovery:** Request a time-limited reset token and set a new password.
+- **Media uploads:** Store course thumbnails, profile images, and lecture media through Cloudinary.
+- **Email notifications:** Send verification, enrollment, payment receipt, contact response, and password update emails.
+- **Responsive dark UI:** Use a responsive StudyNotion design with reusable React components, Tailwind utility classes, custom CSS, icons, toast notifications, and loading states.
+- **Auto-sliding reviews:** Present learner testimonials in an automatically moving Swiper React carousel.
 
-## Tech Stack
+## Technology stack
 
-- **Frontend Framework**: React 19
-- **Build Tool**: Vite
-- **Routing**: React Router DOM (v7)
-- **Icons**: React Icons (`react-icons`)
-- **Notifications**: React Toastify (`react-toastify`)
-- **Styling**: Pure Modular CSS (Vanilla CSS & CSS Custom Properties)
+### Frontend
 
----
+- React 19 and React DOM
+- Vite
+- React Router DOM 7
+- Redux Toolkit and React Redux
+- Tailwind CSS with the Vite plugin and component-specific CSS
+- Axios for API requests
+- Chart.js and `react-chartjs-2` for instructor charts
+- Swiper React for the review carousel
+- React Hook Form, React Icons, and React Hot Toast
 
-## Project Structure
+### Backend
+
+- Node.js and Express 5
+- MongoDB with Mongoose
+- JWT and bcrypt authentication
+- Razorpay order creation and payment verification
+- Cloudinary uploads
+- Nodemailer email delivery
+- Express File Upload and CORS
+
+## Project structure
 
 ```text
-src/
-+-- assets/             # Brand logos, frames, illustrations, and badges
-+-- components/         # Modular components & corresponding CSS
-¦   +-- About.jsx & .css
-¦   +-- Contact.jsx & .css
-¦   +-- Course.jsx & .css
-¦   +-- Courses.jsx & .css
-¦   +-- Dashboard.jsx & .css
-¦   +-- FilterButton.jsx & .css
-¦   +-- Footer.jsx & .css
-¦   +-- Home.jsx & .css
-¦   +-- Navbar.jsx & .css
-¦   +-- PrivateRoute.jsx
-¦   +-- SignIn.jsx & .css
-¦   +-- SignUp.jsx & .css
-¦   +-- Spinner.jsx & .css
-+-- data.js             # Course categories, API endpoints, and mock data
-+-- App.jsx & App.css   # Main app layout, API fetching, and route configuration
-+-- index.css           # Global theme variables, reset, and typography
-+-- main.jsx            # Application entry point & router/toast setup
+StudyNotion/
+├── server/
+│   ├── config/              # Database, Cloudinary, and Razorpay configuration
+│   ├── controllers/         # Authentication, course, payment, profile, and review logic
+│   ├── mail/templates/      # HTML email templates
+│   ├── middlewares/         # JWT and role checks
+│   ├── models/              # User, profile, course, progress, payment, and review schemas
+│   ├── routes/              # Auth, course, profile, and payment endpoints
+│   ├── utils/               # Upload and email helpers
+│   ├── index.js             # Express server entry point
+│   └── package.json
+├── src/
+│   ├── components/          # Shared UI, catalog, learning, home, auth, and dashboard components
+│   ├── data/                # Navigation, footer, dashboard, and static display data
+│   ├── pages/               # Route-level pages
+│   ├── redux/               # Store, reducers, and slices
+│   ├── services/            # API endpoints, Axios connector, and feature operations
+│   ├── utils/               # Formatting and application helpers
+│   ├── App.jsx              # Client routes and session hydration
+│   └── main.jsx             # React entry point
+├── tests/                   # Focused scripts for cart, reviews, and profile behavior
+├── package.json             # Frontend scripts and dependencies
+└── vite.config.js           # Vite server and API proxy configuration
 ```
 
----
-
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js (v18.0.0 or higher recommended)
-- npm or yarn
+- Node.js 18 or newer
+- npm
+- MongoDB database
+- Razorpay account for checkout flows
+- Cloudinary account for media uploads
+- SMTP credentials for application email
 
-### Installation & Setup
+### Install dependencies
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/yuvraj-aura/StudyNotion.git
-   ```
+```bash
+git clone https://github.com/yuvraj-aura/StudyNotion.git
+cd StudyNotion
+npm install
+cd server
+npm install
+cd ..
+```
 
-2. **Navigate to the project directory:**
-   ```bash
-   cd StudyNotion
-   ```
+### Configure the backend
 
-3. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+Create `server/.env` with the values required by the API:
 
-4. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
+```env
+DATABASE_URL=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+CLIENT_URL=http://localhost:5173
 
-5. **Open in browser:**
-   Navigate to [http://localhost:5173](http://localhost:5173) to view the application.
+CLOUD_NAME=your_cloudinary_cloud_name
+API_KEY=your_cloudinary_api_key
+API_SECRET=your_cloudinary_api_secret
+FOLDER_NAME=studynotion
+
+RAZORPAY_KEY=your_razorpay_key_id
+RAZORPAY_SECRET=your_razorpay_secret
+RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
+
+MAIL_HOST=your_smtp_host
+MAIL_USER=your_smtp_username
+MAIL_PASS=your_smtp_password
+```
+
+Keep `server/.env` out of version control. The backend loads this file automatically during startup.
+
+### Run the application
+
+Run the frontend and backend together:
+
+```bash
+npm run dev:all
+```
+
+Or run them separately:
+
+```bash
+# terminal 1
+npm run dev
+
+# terminal 2
+npm run server
+```
+
+The frontend is available at [http://localhost:5173](http://localhost:5173), and the API runs on port `4000`. Vite proxies `/api` requests to the backend.
+
+## Useful scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run server` | Start the backend with Nodemon |
+| `npm run dev:all` | Run the frontend and backend together |
+| `npm run build` | Create a production frontend build |
+| `npm run preview` | Preview the production frontend build |
+| `npm run lint` | Run Oxlint against the project |
+| `npm --prefix server start` | Start the backend without Nodemon |
+
+## Main user flows
+
+1. **Register and sign in:** A visitor requests an OTP, verifies the email, creates an account, and signs in.
+2. **Discover a course:** A student browses the home page or catalog, filters by category, and opens a course detail page.
+3. **Purchase and enroll:** The student adds courses to the cart or chooses Buy Now, completes Razorpay checkout, and receives enrollment confirmation after server-side verification.
+4. **Learn and review:** The student watches lectures, updates progress, and submits a rating or review.
+5. **Build and publish:** An instructor creates course content, uploads media, manages sections and lectures, then publishes the course.
+6. **Review performance:** The instructor dashboard summarizes course count, students, and income with interactive charts.
+
+## Testing notes
+
+The `tests/` directory contains focused Node.js scripts for cart synchronization, backend cart behavior, profile photo handling, and course reviews. Payment, Cloudinary, email, and database flows require valid local environment variables and service credentials before they can be exercised end to end.
+
+## Security and configuration notes
+
+- Never commit `server/.env`, API keys, payment secrets, SMTP passwords, or Cloudinary credentials.
+- Payment verification is performed on the server before a course is marked as purchased.
+- Protected routes require a valid JWT and the appropriate account role.
+- Configure the Razorpay webhook endpoint as `/api/v1/payment/webhook` when webhook-based payment confirmation is enabled.
+
+## License
+
+This project is currently maintained as a personal StudyNotion application. NOT TO BE **REUSED** .
+
