@@ -2,17 +2,16 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ACCOUNT_TYPE } from "../../../utils/constants";
-import { addToCart } from "../../../redux/slices/cartSlice";
 import { toast } from 'react-hot-toast';
 import { RiShareForwardLine } from "react-icons/ri";
-import { syncCartWithDB } from "../../../services/operations/cartAPI";
+import { updateCourseInCart, getUserCartFromDB } from "../../../services/operations/cartAPI";
 
 const CourseDetailsCard = ({ course, handleBuyNow }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { token } = useSelector((state) => state.auth);
     const { user } = useSelector((state) => state.profile);
-    const {cart} = useSelector((state) => state.cart)
+    const { cart, paymentLoading, cartUpdating, cartLoading, cartReady } = useSelector((state) => state.cart)
 
     const {
         name,
@@ -20,19 +19,25 @@ const CourseDetailsCard = ({ course, handleBuyNow }) => {
         price: CurrentPrice,
     } = course;
 
+    const isEnrolled = course.studentsEnrolled?.some((id) => String(id) === String(user?._id));
+    const isInstructor = user?.accountType === ACCOUNT_TYPE.INSTRUCTOR;
+
+    const isInCart = cart.some((item) => String(item._id) === String(course._id));
+
     const handleAddToCart = () => {
         if (user && user?.accountType === ACCOUNT_TYPE.INSTRUCTOR) {
             toast.error("You are an Instructor, you can't buy a course")
             return;
         }
         if (token) {
-            dispatch(addToCart(course));
-            toast.success("Course added to cart");
-            const updatedCart = [...(cart || []), course];
-            syncCartWithDB(updatedCart, token);
+            if (!cartReady) {
+                dispatch(getUserCartFromDB(token));
+                return;
+            }
+            dispatch(updateCourseInCart(course, isInCart));
         }
         if (!token) {
-            toast.info("Please login to enroll");
+            toast("Please login to enroll");
             navigate("/signin");
             return;
         }
@@ -59,28 +64,29 @@ const CourseDetailsCard = ({ course, handleBuyNow }) => {
                 <div className="flex flex-col gap-y-3">
                     <button
                         type="button"
-                        onClick={
-                            user && course?.studentsEnrolled.includes(user?.id) ? 
-                            (() => navigate("/dashboard/enrolled-courses")) : handleBuyNow
-                        }
+                        disabled={paymentLoading || cartUpdating || isInstructor}
+                        onClick={isEnrolled ? () => navigate("/dashboard/enrolled-courses") : handleBuyNow}
                         className="w-full rounded-lg bg-yellow-200 py-3 font-semibold text-richblack-900 hover:bg-yellow-100 transition-all cursor-pointer shadow-md hover:scale-[0.99]"
                     >
                         {
-                            user && course?.studentsEnrolled.includes(user?._id) ? "Go to Course" : "Buy Now"
+                            isEnrolled ? "Go to Course" : "Buy Now"
                         }
                     </button>
 
                     { // Add to cart
-                        (!(course?.studentsEnrolled?.includes(user?._id) || course?.studentEnrolled?.includes(user?._id) || course?.instructor?._id === user?._id || course?.instructor === user?._id)) && (
+                        (!isEnrolled && !isInstructor) && (
                             <button
                                 type="button"
                                 onClick={handleAddToCart}
+                                disabled={cartUpdating || paymentLoading || cartLoading}
+                                aria-busy={cartUpdating}
                                 className="w-full rounded-lg bg-richblack-900 py-3 font-semibold text-richblack-50 border border-richblack-700 hover:bg-richblack-700 transition-all cursor-pointer"
                             >
-                                Add to Cart
+                                {token && !cartReady ? (cartLoading ? "Loading Cart..." : "Retry Loading Cart") : isInCart ? "Remove from Cart" : "Add to Cart"}
                             </button>
                         )
                     }
+
 
                 </div>
 

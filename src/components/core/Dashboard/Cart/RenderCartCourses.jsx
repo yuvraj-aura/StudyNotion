@@ -2,7 +2,7 @@ import { FaStar } from "react-icons/fa"
 import { RiDeletedBin6Line } from "react-icons/ri"
 import ReactStars from "react-rating-stars-component"
 import { useDispatch, useSelector } from "react-redux"
-import { removeFromCart } from "../../../../redux/slices/cartSlice"
+import { updateCourseInCart } from "../../../../services/operations/cartAPI"
 
 const RenderCartCourses = () => {
     const { cart } = useSelector((state) => state.cart)
@@ -49,7 +49,7 @@ const RenderCartCourses = () => {
 
                     <div className="flex flex-col items-end space-y-2">
                         <button
-                        onClick={() => dispatch(removeFromCart(course._id))}
+                        onClick={() => dispatch(updateCourseInCart(course, true))}
                         className="flex items-center gap-x-1 rounded-md broder border-richblack-600 bg-richblack-700 py-3 px-3 text-pink-400"
                         >
                             <RiDeletedBin6Line />

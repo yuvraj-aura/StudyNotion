@@ -3,32 +3,31 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FaStar } from "react-icons/fa";
-import { removeFromCart, resetCart } from "../../../redux/slices/cartSlice";
-import { syncCartWithDB } from "../../../services/operations/cartAPI";
-import { toast } from "react-hot-toast";
+import { updateCourseInCart, getUserCartFromDB } from "../../../../services/operations/cartAPI";
+import { buyCourse } from "../../../../services/operations/studentFeaturesAPI";
 
 export default function Cart() {
-  const { cart, total, totalItems } = useSelector((state) => state.cart);
+  const { cart, total, totalItems, paymentLoading, cartUpdating, cartLoading, cartReady } = useSelector((state) => state.cart);
   const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.profile);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleRemove = (courseId) => {
-    dispatch(removeFromCart(courseId));
-    const updatedCart = cart.filter((item) => item._id !== courseId);
-    if (token) {
-      syncCartWithDB(updatedCart, token);
-    }
+    dispatch(updateCourseInCart({ _id: courseId }, true));
   };
 
   const handleCheckout = () => {
-    toast.success("Order placed successfully!");
-    dispatch(resetCart());
-    if (token) {
-      syncCartWithDB([], token);
-    }
-    navigate("/dashboard/enrolled-courses");
+    if (!token || cart.length === 0) return;
+    return buyCourse({ courses: cart.map((course) => course._id), token, userDetails: user, navigate, dispatch });
   };
+
+  if (!cartReady) return (
+    <div className="text-richblack-5">
+      <p>{cartLoading ? "Loading your cart..." : "Could not load your saved cart."}</p>
+      {!cartLoading && <button onClick={() => dispatch(getUserCartFromDB(token))}>Retry</button>}
+    </div>
+  );
 
   return (
     <div className="text-richblack-5 font-inter flex flex-col gap-y-6">
@@ -49,12 +48,12 @@ export default function Cart() {
                 <div className="flex flex-1 flex-col gap-4 xl:flex-row">
                   <img
                     src={course?.thumbnail}
-                    alt={course?.courseName}
+                    alt={course?.name ?? course?.courseName}
                     className="h-[148px] w-[220px] rounded-lg object-cover border border-richblack-700"
                   />
                   <div className="flex flex-col space-y-1">
                     <p className="text-lg font-semibold text-richblack-5">
-                      {course?.courseName}
+                      {course?.name ?? course?.courseName}
                     </p>
                     <p className="text-sm text-richblack-300">
                       {course?.category?.name || "Web Development"}
@@ -76,6 +75,7 @@ export default function Cart() {
                 <div className="flex flex-col items-end space-y-2">
                   <button
                     onClick={() => handleRemove(course._id)}
+                    disabled={cartUpdating || paymentLoading || cartLoading}
                     className="flex items-center gap-x-1 rounded-md border border-richblack-700 bg-richblack-700 py-2 px-3 text-pink-200 hover:bg-richblack-600 transition-all cursor-pointer text-xs font-semibold"
                   >
                     <RiDeleteBin6Line className="text-sm" />
@@ -96,6 +96,7 @@ export default function Cart() {
 
             <button
               onClick={handleCheckout}
+              disabled={paymentLoading || cartUpdating}
               className="w-full rounded-lg bg-yellow-50 py-3 font-semibold text-richblack-900 hover:bg-yellow-100 transition-all cursor-pointer shadow-md hover:scale-[0.99]"
             >
               Buy Now

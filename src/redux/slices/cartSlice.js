@@ -1,16 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-hot-toast";
 
+const uniqueCourses = (courses) => [...new Map((Array.isArray(courses) ? courses : [])
+    .filter((course) => course?._id)
+    .map((course) => [String(course._id).toLowerCase(), course])).values()];
+
 const initialState = {
-    cart: localStorage.getItem("cart")
-        ? JSON.parse(localStorage.getItem("cart"))
-        : [],
-    total: localStorage.getItem("total")
-        ? JSON.parse(localStorage.getItem("total"))
-        : 0,
-    totalItems: localStorage.getItem("totalItems")
-        ? JSON.parse(localStorage.getItem("totalItems"))
-        : 0,
+    // The database hydrates the cart for the current authenticated user.
+    cart: [],
+    total: 0,
+    totalItems: 0,
+    paymentLoading: false,
+    cartUpdating: false,
+    cartLoading: false,
+    cartReady: false,
 };
 
 const cartSlice = createSlice({
@@ -18,7 +21,7 @@ const cartSlice = createSlice({
     initialState: initialState,
     reducers: {
         setCart: (state, action) => {
-            state.cart = action.payload || [];
+            state.cart = uniqueCourses(action.payload);
             state.totalItems = state.cart.length;
             state.total = state.cart.reduce((acc, curr) => acc + (curr.price || 0), 0);
             localStorage.setItem("cart", JSON.stringify(state.cart));
@@ -62,6 +65,9 @@ const cartSlice = createSlice({
             }
         },
         resetCart: (state) => {
+            state.cartReady = false;
+            state.cartLoading = false;
+            state.cartUpdating = false;
             state.cart = [];
             state.total = 0;
             state.totalItems = 0;
@@ -72,10 +78,21 @@ const cartSlice = createSlice({
         setTotalItems: (state, action) => {
             state.totalItems = action.payload;
         },
+        setCartLoading: (state, action) => {
+            state.cartLoading = action.payload;
+            if (action.payload) state.cartReady = false;
+        },
+        setCartReady: (state, action) => { state.cartReady = action.payload; },
+        setCartUpdating: (state, action) => {
+            state.cartUpdating = action.payload;
+        },
+        setPaymentLoading: (state, action) => {
+            state.paymentLoading = action.payload;
+        },
     },
 });
 
-export const { setCart, addToCart, removeFromCart, resetCart, setTotalItems } =
+export const { setCart, addToCart, removeFromCart, resetCart, setTotalItems, setPaymentLoading, setCartUpdating, setCartLoading, setCartReady } =
     cartSlice.actions;
 
 export default cartSlice.reducer;
