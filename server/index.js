@@ -7,16 +7,26 @@ const paymentRoutes = require("./routes/Payments");
 const profileRoutes = require("./routes/Profile");
 const userRoutes = require("./routes/User");
 
+
+
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+
+
 
 // importing connections
 const dbConnect = require("./config/database");
 const { cloudinaryConnect } = require("./config/cloudinary");
 const fileUpload = require("express-fileupload")
 
+
+
 require("dotenv").config({ path: require("node:path").join(__dirname, ".env") });
-const port = 4000;
+const port = process.env.PORT || 4000;
+
+// loading the client url from config/clientUrl
+const { getClientUrl } = require("./config/clientUrl");
+const clientUrl = getClientUrl();
 
 // importing middlewares
 app.post("/api/v1/payment/webhook",
@@ -28,18 +38,21 @@ app.post("/api/v1/payment/webhook",
 // Keep the webhook body raw for signature verification; parse JSON for all other API routes.
 
 
+// to load the request body from frontend
 app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://study-notion-zeta-lake.vercel.app"
+            clientUrl,
         ],
         credentials: true,
     })
 )
 
+
+// for cloudinary, to store the file, on a temo folder  first
 app.use(
     fileUpload({
         useTempFiles: true,

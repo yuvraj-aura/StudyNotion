@@ -1,5 +1,13 @@
 
-const BASE_URL = "/api/v1";
+// const BASE_URL = import.meta.env.REACT_API_BASE_URL + "/api/v1";
+const configuredBase = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/+$/, "");
+if (import.meta.env.PROD && !configuredBase) {
+    throw new Error("VITE_API_BASE_URL is required for production builds");
+}
+
+const BASE_URL = configuredBase
+    ? configuredBase.replace(/(?:\/api\/v1)+$/, "" ) + "/api/v1"
+    : "/api/v1";
 
 // AUTH ENDPOINTS
 export const endpoints = {

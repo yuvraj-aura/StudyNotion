@@ -1,3 +1,4 @@
+const { getClientUrl } = require("../config/clientUrl");
 const User = require("../models/user");
 const mailSender = require("../utils/mailSender");
 const bcrypt = require("bcrypt");
@@ -32,7 +33,7 @@ exports.resetPasswordToken = async (req, res) => {
         );
 
         // create url
-        const URL = `http://localhost:5173/update-password/${token}`;
+        const URL = `${getClientUrl()}/update-password/${token}`;
 
         // send mail  containing the url
         await mailSender(

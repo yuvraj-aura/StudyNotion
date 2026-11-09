@@ -18,6 +18,7 @@ const {
  * @param {string} token  - JWT auth token
  * @param {FormData} formData - must contain field "profilePhoto" (File)
  */
+
 export function updateProfilePicture(token, formData) {
     return async (dispatch) => {
         const toastId = toast.loading("Uploading profile photo...");

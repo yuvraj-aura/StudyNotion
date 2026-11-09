@@ -113,6 +113,7 @@ cd ..
 Create `server/.env` with the values required by the API:
 
 ```env
+PORT=your_port_number || 4000
 DATABASE_URL=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 CLIENT_URL=http://localhost:5173
@@ -189,3 +190,26 @@ The `tests/` directory contains focused Node.js scripts for cart synchronization
 
 This project is currently maintained as a personal StudyNotion application. NOT TO BE **REUSED** .
 
+
+## Production deployment configuration
+
+Vercel uses the repository root, `npm run build`, and output directory `dist`.
+Set `VITE_API_BASE_URL` in Vercel Production to the real Render HTTPS origin.
+The value is public and is embedded at build time; redeploy after changing it.
+An optional `/api/v1` suffix is normalized, but an origin-only value is preferred.
+The build requires this variable. For local `npm run dev`, leave it unset to use
+Vite's existing `/api` proxy. Local Vite variables belong in root `.env.local`,
+not `src/.env`; `.env.example` documents the variable without deployment values.
+
+Render should use root directory `server`, install with `npm ci`, and start with
+`npm start`. Set `NODE_ENV=production`, `CLIENT_URL` (the real Vercel HTTPS origin),
+`DATABASE_URL`, `JWT_SECRET`, `CLOUD_NAME`, `API_KEY`, `API_SECRET`, `FOLDER_NAME`,
+`RAZORPAY_KEY`, `RAZORPAY_SECRET`, `MAIL_HOST`, `MAIL_USER`, and `MAIL_PASS`.
+Set `RAZORPAY_WEBHOOK_SECRET` if webhook confirmation is enabled. Render supplies
+`PORT`. Never copy backend secrets into `VITE_` variables.
+
+`CLIENT_URL` supplies the CORS production origin and frontend email links.
+Production rejects missing, local, non-HTTPS, or path-bearing CLIENT_URL values.
+Local development can use `http://localhost:5173`. The Vercel SPA rewrite excludes
+`/api` and `/api/...`; production API calls must go directly to the Render origin.
+No real deployment domains are stored in this configuration.

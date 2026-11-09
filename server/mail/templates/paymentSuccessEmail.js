@@ -1,3 +1,4 @@
+const { getClientUrl } = require("../../config/clientUrl");
 exports.paymentSuccessEmail = (name, amount, orderId, paymentId) => {
     const formattedAmount = new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -111,7 +112,7 @@ exports.paymentSuccessEmail = (name, amount, orderId, paymentId) => {
 
     <body>
         <div class="container">
-            <a href="https://studynotion-edtech-project.vercel.app"><img class="logo"
+            <a href="${getClientUrl()}"><img class="logo"
                     src="https://i.ibb.co/7Xyj3PC/logo.png" alt="StudyNotion Logo"></a>
             <div class="message">Payment Successful!</div>
             <div class="body">
@@ -139,7 +140,7 @@ exports.paymentSuccessEmail = (name, amount, orderId, paymentId) => {
                 </div>
 
                 <p>Please log in to your learning dashboard to access the course materials and start your learning journey.</p>
-                <a class="cta" href="https://studynotion-edtech-project.vercel.app/dashboard">Go to Dashboard</a>
+                <a class="cta" href="${getClientUrl()}/dashboard">Go to Dashboard</a>
             </div>
             <div class="support">If you have any questions or need assistance, please feel free to reach out to us at
                 <a href="mailto:info@studynotion.com">info@studynotion.com</a>. We are here to help!</div>

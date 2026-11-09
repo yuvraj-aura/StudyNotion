@@ -1,3 +1,4 @@
+const { getClientUrl } = require("../../config/clientUrl");
 exports.contactFormResponse = (firstName, lastName, email, message) => {
     const preview = message && message.length > 120
         ? `${message.slice(0, 120)}...`
@@ -104,7 +105,7 @@ exports.contactFormResponse = (firstName, lastName, email, message) => {
 
     <body>
         <div class="container">
-            <a href="https://studynotion-edtech-project.vercel.app"><img class="logo"
+            <a href="${getClientUrl()}"><img class="logo"
                     src="https://i.ibb.co/7Xyj3PC/logo.png" alt="StudyNotion Logo"></a>
             <div class="message">Thanks for Reaching Out!</div>
             <div class="body">
@@ -128,7 +129,7 @@ exports.contactFormResponse = (firstName, lastName, email, message) => {
                 </div>
 
                 <p>In the meantime, feel free to explore our courses or visit our dashboard.</p>
-                <a class="cta" href="https://studynotion-edtech-project.vercel.app">Visit Website</a>
+                <a class="cta" href="${getClientUrl()}">Visit Website</a>
             </div>
             <div class="support">
                 If you have any questions, please feel free to reach out to us at
@@ -251,7 +252,7 @@ exports.contactFormNotification = (firstName, lastName, email, phoneNo, message)
 
     <body>
         <div class="container">
-            <a href="https://studynotion-edtech-project.vercel.app"><img class="logo"
+            <a href="${getClientUrl()}"><img class="logo"
                     src="https://i.ibb.co/7Xyj3PC/logo.png" alt="StudyNotion Logo"></a>
             <div class="message">New Contact Form Submission</div>
             <div class="body">
